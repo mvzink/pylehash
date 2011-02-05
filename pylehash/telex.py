@@ -22,6 +22,8 @@ class Telex(dict):
     def to(self, to):
         if isinstance(to, tuple):
             self['_to'] = to[0] + ':' + str(to[1])
+        if isinstance(to, str):
+            self['_to'] = to
     
     def dumps(self):
         return json.dumps(self)

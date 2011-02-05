@@ -13,8 +13,10 @@ class Switch(object):
     '''
     def __init__(self):
         self.count = 0
+        
 
     def handle(self, telex, ipp):
         self.count += 1
+        line = self.line(ipp)
         print "Received ", telex, "from", ipp[0], ":", ipp[1], "#", self.count
         return Telex(to=ipp, other_dict={'+foo':'bar'})
