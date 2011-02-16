@@ -24,7 +24,7 @@ def distance(hash1, hash2):
     if diff == 0:
         return diff
     else:
-        return 160 - floor(log(diff, 2))
+        return int(160 - floor(log(diff, 2)))
 
 def ipp_distance(ipp1, ipp2):
     return hash_distance(binhash(ipp1), binhash(ipp2))

@@ -40,6 +40,8 @@ class TestHash(TestCase):
     def test_distance_correct_for_closeipp(self):
         assert hash.distance(selfipp, closeipp) == 1
 
+    def test_distance_is_an_int(self):
+        assert isinstance(hash.distance(selfipp, closeipp), int)
 
 
 from pylehash.switch import Switch
@@ -52,12 +54,16 @@ class TestSwitch(TestCase):
 
     def test_switch_complete_bootstrap(self):
         assert self.s.ipp == selfipp
-
-    def test_switch_bucket_for_gives_correct_bucket(self):
-        o = {'foo': 'bar'}
-        self.s.buckets[1] = o
-        assert o == self.s.bucket_for(closeipp)
-
+        
     def test_switch_add_end_adds_end(self):
         self.s.add_end(closeipp)
         assert self.s.bucket_for(closeipp)[hash.hexhash(closeipp)]
+
+        
+    def test_switch_bucket_for_gives_correct_bucket(self):
+        self.s.add_end(closeipp)
+        o = self.s.bucket_for(closeipp)
+        assert self.s.buckets.index(o) == hash.distance(selfipp, closeipp)
+        self.s.add_end(faripp)
+        p = self.s.bucket_for(faripp)
+        assert self.s.buckets.index(p) == hash.distance(selfipp, faripp)

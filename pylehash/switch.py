@@ -14,7 +14,9 @@ class Switch(object):
     '''
     def __init__(self):
         self.count = 0
-        self.buckets = {}
+        self.buckets = []
+        for i in range(0,161):
+            self.buckets.append({})
 
     def handle(self, telex, ipp):
         self.count += 1
@@ -27,8 +29,6 @@ class Switch(object):
 
     def bucket_for(self, ipp):
         d = self.distance(ipp)
-        if d not in self.buckets:
-            self.buckets[d] = {}
         return self.buckets[d]
 
     def distance(self, ipp):
