@@ -12,8 +12,7 @@ class Telex(dict):
     TODO: Write docs for Telex
     '''
 
-    def __init__(self, to=None, data=None, other_dict={}):
-        if to: self.to(to)
+    def __init__(self, data=None, other_dict={}):
         self.update(other_dict)
         if data:
             # TODO: catch eventuality of non-object at top level

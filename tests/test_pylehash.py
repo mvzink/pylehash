@@ -67,3 +67,68 @@ class TestSwitch(TestCase):
         self.s.add_end(faripp)
         p = self.s.bucket_for(faripp)
         assert self.s.buckets.index(p) == hash.distance(selfipp, faripp)
+
+
+from pylehash.telex import Telex
+
+class TestTelex(TestCase):
+
+    def test_telex_acts_like_a_dictionary(self):
+        t = Telex()
+        t['+test'] = 'testing'
+        assert t['+test'] == 'testing'
+
+    def test_telex_constructor_takes_optional_json_data(self):
+        t = Telex(data='{"+test": "testing"}')
+        assert t['+test'] == 'testing'
+
+    def test_telex_constructor_takes_optional_other_dictionary(self):
+        t = Telex(other_dict={'+test':'testing'})
+        assert t['+test'] == 'testing'
+
+    def test_telex_dumps_to_json(self):
+        t = Telex()
+        t['+test'] = 'testing'
+        print(t.dumps())
+        assert t.dumps() == '{"+test": "testing"}'
+
+from pylehash.default_handlers import TapHandler
+
+class TestTapHandler(TestCase):
+    '''
+    More than anything, this should serve as an example of how to write
+    a handler class that conforms to the accepted protocol.
+    See pylehash.default_handlers for TapHandler.
+    '''
+
+    def setUp(self):
+        '''
+        Defines a tap handler that should match any telex which either
+            1. has both +foo and +bar signals, or
+            2. has a +foo signal equal to "no_bar"
+        '''
+        self.t = TapHandler([
+            {'has': ['+foo', '+bar']},
+            {'is': {'+foo': 'no_bar'}}
+        ])
+        self.match_has = Telex(other_dict={
+            '+foo': 'a_bar',
+            '+bar': 'still_a_bar'
+        })
+        self.match_is = Telex(other_dict={
+            '+foo': 'no_bar'
+        })
+        self.match_both = Telex(other_dict={
+            '+foo': 'no_bar',
+            '+bar': 'except_still_a_bar'
+        })
+        self.no_match = Telex(other_dict={
+            '+foo': 'where_is_the_bar'
+        })
+
+    def test_tap_handler_correctly_tests_for_matching_telexes(self):
+        assert self.t.matches(self.match_has)
+        assert self.t.matches(self.match_is)
+        assert self.t.matches(self.match_both)
+        assert not self.t.matches(self.no_match)
+
