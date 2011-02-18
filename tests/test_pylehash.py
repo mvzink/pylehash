@@ -70,8 +70,13 @@ class TestSwitch(TestCase):
         p = self.s.bucket_for(faripp)
         assert self.s.buckets.index(p) == hash.distance(selfipp, faripp)
     
-    def test_switch_send(self):
-        assert "Not yet implemented" == True
+    def test_switch_send_writes_to_transport(self):
+        s = Switch()
+        s.complete_bootstrap(selfipp)
+        s.transport = Mock()
+        s.transport.write = Mock()
+        s.send(Telex(), faripp)
+        s.transport.write.assert_called_with(Telex().dumps(), faripp)
 
 
 from pylehash.telex import Telex
