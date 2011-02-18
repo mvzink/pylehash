@@ -2,8 +2,13 @@ from pylehash.hash import *
 
 class TapHandler(object):
 
-    def __init__(self, tests):
+    def __init__(self, tests, to):
         self.tests = tests
+        self.to = to
+
+    def process(self, telex, switch):
+        if self.matches(telex):
+            switch.send(telex, self.to)
 
     def matches(self, telex):
         telex_matches = None

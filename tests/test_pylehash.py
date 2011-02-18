@@ -1,3 +1,5 @@
+from mock import Mock
+
 from test_stuff import TestCase, selfipp, closeipp, faripp
 from pylehash import hash
 
@@ -67,6 +69,9 @@ class TestSwitch(TestCase):
         self.s.add_end(faripp)
         p = self.s.bucket_for(faripp)
         assert self.s.buckets.index(p) == hash.distance(selfipp, faripp)
+    
+    def test_switch_send(self):
+        assert "Not yet implemented" == True
 
 
 from pylehash.telex import Telex
@@ -92,7 +97,7 @@ class TestTelex(TestCase):
         print(t.dumps())
         assert t.dumps() == '{"+test": "testing"}'
 
-from pylehash.default_handlers import TapHandler
+from pylehash.handlers import TapHandler
 
 class TestTapHandler(TestCase):
     '''
@@ -110,7 +115,7 @@ class TestTapHandler(TestCase):
         self.t = TapHandler([
             {'has': ['+foo', '+bar']},
             {'is': {'+foo': 'no_bar'}}
-        ])
+        ], faripp)
         self.match_has = Telex(other_dict={
             '+foo': 'a_bar',
             '+bar': 'still_a_bar'
@@ -126,9 +131,19 @@ class TestTapHandler(TestCase):
             '+foo': 'where_is_the_bar'
         })
 
-    def test_tap_handler_correctly_tests_for_matching_telexes(self):
+    def test_tap_handler_correctly_and_safely_tests_for_matching_telexes(self):
         assert self.t.matches(self.match_has)
         assert self.t.matches(self.match_is)
         assert self.t.matches(self.match_both)
         assert not self.t.matches(self.no_match)
+    
+    def test_tap_handler_forwards_telex_when_called(self):
+        # TODO: Also make sure the correct telex is being sent
+        #   i.e. _hop increased, _br, etc. but otherwise the same
+        s = Switch()
+        s.complete_bootstrap(selfipp)
+        s.send = Mock()
+        self.t.process(self.match_both, s)
+        assert s.send.called
+
 
