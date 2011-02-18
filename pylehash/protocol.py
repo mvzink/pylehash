@@ -5,7 +5,7 @@ Created on Feb 3, 2011
 '''
 
 from twisted.internet.protocol import DatagramProtocol
-from pylehash.telex import Telex #@UnresolvedImport
+from pylehash.telex import Telex
 
 class Telehash(DatagramProtocol):
     
