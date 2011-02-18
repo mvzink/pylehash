@@ -1,3 +1,9 @@
+'''
+Created on Feb 15, 2011
+
+@author: Michael Victor Zink <zuwiki@zuwiki.net>
+'''
+
 from pylehash.hash import *
 
 class TapHandler(object):
