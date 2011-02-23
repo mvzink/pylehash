@@ -4,8 +4,7 @@ Created on Feb 15, 2011
 @author: Michael Victor Zink <zuwiki@zuwiki.net>
 '''
 
-from pylehash.hash import *
-from pylehash.telex import Telex
+from pylehash import hash, ippstr, Telex
 
 class TapHandler(object):
 
@@ -66,6 +65,6 @@ class EndHandler(TapHandler):
         super(EndHandler, self).__init__([{'has': ['+end']}])
     
     def handle(self, telex, from_ipp, switch):
-        sees = []
+        sees = map(ippstr, switch.bucket_for(telex['+end']).values()[:3])
         t = Telex(other_dict={'.see':sees})
         switch.send(telex=t, to=from_ipp)

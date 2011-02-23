@@ -1,7 +1,7 @@
 from mock import Mock
 
 from test_stuff import TestCase, selfipp, closeipp, faripp
-from pylehash import *
+from pylehash import hash, Telex, Switch, handlers, ippstr
 
 class TestHash(TestCase):
     
@@ -165,11 +165,15 @@ class TestEndHandler(TestCase):
         print(self.seeking_far)
         assert self.t.matches(self.seeking_far)
 
-    def test_end_handler_sends_appropriate_list_of_ends(self):
+    def test_end_handler_sends_list_of_ends_to_original_sender(self):
         switch = Switch()
         switch.complete_bootstrap(selfipp)
+        switch.add_end(faripp)
         switch.send = Mock()
         self.t.handle(self.seeking_far, self.from_ipp, switch)
         assert switch.send.called
-        assert isinstance(switch.send.call_args[-1]['telex'], Telex)
+        tel = switch.send.call_args[-1]['telex']
+        assert isinstance(tel, Telex)
+        assert ippstr(faripp) in tel['.see']
         assert switch.send.call_args[-1]['to'] == self.from_ipp
+

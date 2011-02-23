@@ -6,12 +6,13 @@ Created on Feb 3, 2011
 
 from hashlib import sha1
 from math import floor, log
+from pylehash import ippstr
 
 def hexhash(ipp):
     if isinstance(ipp, str):
         return sha1(ipp).hexdigest()
     elif isinstance(ipp, tuple):
-        return hexhash(ipp[0] + ':' + str(ipp[1]))
+        return hexhash(ippstr(ipp))
 
 def hexbin(hex):
     return int(hex, 16)
