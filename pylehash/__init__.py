@@ -4,7 +4,7 @@ Created on Feb 3, 2011
 @author: Michael Victor Zink <zuwiki@zuwiki.net>
 '''
 
-import telex
+from telex import Telex
+from switch import Switch
 import hash
-import switch
-import server
+import handlers

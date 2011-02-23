@@ -1,7 +1,7 @@
 from mock import Mock
 
 from test_stuff import TestCase, selfipp, closeipp, faripp
-from pylehash import hash
+from pylehash import *
 
 class TestHash(TestCase):
     
@@ -53,8 +53,6 @@ class TestHash(TestCase):
         assert a == b == c == d
 
 
-from pylehash.switch import Switch
-
 class TestSwitch(TestCase):
 
     def setUp(self):
@@ -68,7 +66,6 @@ class TestSwitch(TestCase):
         self.s.add_end(closeipp)
         assert self.s.bucket_for(closeipp)[hash.hexhash(closeipp)]
 
-        
     def test_switch_bucket_for_gives_correct_bucket(self):
         self.s.add_end(closeipp)
         o = self.s.bucket_for(closeipp)
@@ -85,8 +82,6 @@ class TestSwitch(TestCase):
         s.send(Telex(), faripp)
         s.transport.write.assert_called_with(Telex().dumps(), faripp)
 
-
-from pylehash.telex import Telex
 
 class TestTelex(TestCase):
 
@@ -108,7 +103,6 @@ class TestTelex(TestCase):
         t['+test'] = 'testing'
         assert t.dumps() == '{"+test": "testing"}'
 
-from pylehash.handlers import TapHandler, ForwardingTapHandler
 
 class TestTapHandler(TestCase):
     '''
@@ -123,7 +117,7 @@ class TestTapHandler(TestCase):
             1. has both +foo and +bar signals, or
             2. has a +foo signal equal to "no_bar"
         '''
-        self.t = TapHandler([
+        self.t = handlers.TapHandler([
             {'has': ['+foo', '+bar']},
             {'is': {'+foo': 'no_bar'}}
         ])
@@ -154,19 +148,17 @@ class TestTapHandler(TestCase):
         s = Switch()
         s.complete_bootstrap(selfipp)
         s.send = Mock()
-        t = ForwardingTapHandler([
+        t = handlers.ForwardingTapHandler([
             {'has': ['+foo', '+bar']},
             {'is': {'+foo': 'no_bar'}}
         ], faripp)
         t.handle(self.match_both, s)
         assert s.send.called
 
-from pylehash.handlers import EndHandler
-
 class TestEndHandler(TestCase):
     def setUp(self):
         self.seeking_far = Telex(other_dict={'+end': hash.hexhash(faripp)})
-        self.t = EndHandler()
+        self.t = handlers.EndHandler()
 
     def test_end_handler_only_matches_telexes_with_end_signals(self):
         print(self.seeking_far)
