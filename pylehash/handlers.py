@@ -4,7 +4,7 @@ Created on Feb 15, 2011
 @author: Michael Victor Zink <zuwiki@zuwiki.net>
 '''
 
-from pylehash import hash, ippstr, Telex
+from pylehash import ippstr, Telex
 
 class TapHandler(object):
 
