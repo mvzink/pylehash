@@ -45,6 +45,14 @@ class TestHash(TestCase):
     def test_distance_is_an_int(self):
         assert isinstance(hash.distance(selfipp, closeipp), int)
 
+    def test_distance_supports_hash_or_ipptuple(self):
+        a = hash.distance(selfipp, faripp)
+        b = hash.distance(hash.hexhash(selfipp), hash.hexhash(faripp))
+        c = hash.distance(hash.hexhash(selfipp), faripp)
+        d = hash.distance(selfipp, hash.hexhash(faripp))
+        print a, b
+        assert a == b == c == d
+
 
 from pylehash.switch import Switch
 

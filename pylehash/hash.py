@@ -20,11 +20,18 @@ def binhash(ipp):
     return hexbin(hexhash(ipp))
     
 def distance(hash1, hash2):
-    diff = binhash(hash1) ^ binhash(hash2)
+    if isinstance(hash1, tuple):
+        a = binhash(hash1)
+    else:
+        a = hexbin(hash1)
+
+    if isinstance(hash2, tuple):
+        b = binhash(hash2)
+    else:
+        b = hexbin(hash2)
+
+    diff = a ^ b
     if diff == 0:
         return diff
     else:
         return int(160 - floor(log(diff, 2)))
-
-def ipp_distance(ipp1, ipp2):
-    return hash_distance(binhash(ipp1), binhash(ipp2))
