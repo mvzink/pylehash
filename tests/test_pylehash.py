@@ -50,7 +50,6 @@ class TestHash(TestCase):
         b = hash.distance(hash.hexhash(selfipp), hash.hexhash(faripp))
         c = hash.distance(hash.hexhash(selfipp), faripp)
         d = hash.distance(selfipp, hash.hexhash(faripp))
-        print a, b
         assert a == b == c == d
 
 
@@ -107,7 +106,6 @@ class TestTelex(TestCase):
     def test_telex_dumps_to_json(self):
         t = Telex()
         t['+test'] = 'testing'
-        print(t.dumps())
         assert t.dumps() == '{"+test": "testing"}'
 
 from pylehash.handlers import TapHandler, ForwardingTapHandler
@@ -163,3 +161,20 @@ class TestTapHandler(TestCase):
         t.handle(self.match_both, s)
         assert s.send.called
 
+from pylehash.handlers import EndHandler
+
+class TestEndHandler(TestCase):
+    def setUp(self):
+        self.seeking_far = Telex(other_dict={'+end': hash.hexhash(faripp)})
+        self.t = EndHandler()
+
+    def test_end_handler_only_matches_telexes_with_end_signals(self):
+        print(self.seeking_far)
+        assert self.t.matches(self.seeking_far)
+
+    def test_end_handler_sends_appropriate_list_of_ends(self):
+        switch = Switch()
+        switch.complete_bootstrap(selfipp)
+        switch.send = Mock()
+        self.t.handle(self.seeking_far, switch)
+        assert switch.send.called

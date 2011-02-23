@@ -5,6 +5,7 @@ Created on Feb 15, 2011
 '''
 
 from pylehash.hash import *
+from pylehash.telex import Telex
 
 class TapHandler(object):
 
@@ -30,7 +31,6 @@ class TapHandler(object):
                     for key in test[clause]:
                         # Both this clause and the previous clauses
                         # must match for the test to match
-                        print(key in telex)
                         test_matches = test_matches and key in telex
                 elif clause == 'is':
                     for key in test[clause]:
@@ -57,3 +57,12 @@ class ForwardingTapHandler(TapHandler):
     
     def handle(self, telex, switch):
         switch.send(telex, self.to)
+
+class EndHandler(TapHandler):
+    def __init__(self):
+        super(EndHandler, self).__init__([{'has': ['+end']}])
+    
+    def handle(self, telex, switch):
+        sees = []
+        t = Telex(other_dict={'.see':sees})
+        switch.send(t)
