@@ -8,13 +8,14 @@ from pylehash.hash import *
 
 class TapHandler(object):
 
-    def __init__(self, tests, to):
+    def __init__(self, tests):
         self.tests = tests
-        self.to = to
 
-    def process(self, telex, switch):
-        if self.matches(telex):
-            switch.send(telex, self.to)
+    def handle(self, telex, switch):
+        '''
+        Should be overridden to actually handle the telex.
+        '''
+        pass
 
     def matches(self, telex):
         telex_matches = None
@@ -49,3 +50,10 @@ class TapHandler(object):
             
         return telex_matches
 
+class ForwardingTapHandler(TapHandler):
+    def __init__(self, tests, to):
+        super(ForwardingTapHandler, self).__init__(tests)
+        self.to = to
+    
+    def handle(self, telex, switch):
+        switch.send(telex, self.to)

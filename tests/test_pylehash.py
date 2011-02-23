@@ -110,7 +110,7 @@ class TestTelex(TestCase):
         print(t.dumps())
         assert t.dumps() == '{"+test": "testing"}'
 
-from pylehash.handlers import TapHandler
+from pylehash.handlers import TapHandler, ForwardingTapHandler
 
 class TestTapHandler(TestCase):
     '''
@@ -128,7 +128,7 @@ class TestTapHandler(TestCase):
         self.t = TapHandler([
             {'has': ['+foo', '+bar']},
             {'is': {'+foo': 'no_bar'}}
-        ], faripp)
+        ])
         self.match_has = Telex(other_dict={
             '+foo': 'a_bar',
             '+bar': 'still_a_bar'
@@ -150,13 +150,16 @@ class TestTapHandler(TestCase):
         assert self.t.matches(self.match_both)
         assert not self.t.matches(self.no_match)
     
-    def test_tap_handler_forwards_telex_when_called(self):
+    def test_forwarding_tap_handler_forwards_telex_when_called(self):
         # TODO: Also make sure the correct telex is being sent
         #   i.e. _hop increased, _br, etc. but otherwise the same
         s = Switch()
         s.complete_bootstrap(selfipp)
         s.send = Mock()
-        self.t.process(self.match_both, s)
+        t = ForwardingTapHandler([
+            {'has': ['+foo', '+bar']},
+            {'is': {'+foo': 'no_bar'}}
+        ], faripp)
+        t.handle(self.match_both, s)
         assert s.send.called
-
 
