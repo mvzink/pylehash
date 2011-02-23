@@ -177,3 +177,21 @@ class TestEndHandler(TestCase):
         assert ippstr(faripp) in tel['.see']
         assert switch.send.call_args[-1]['to'] == self.from_ipp
 
+class TestNewTapHandler(TestCase):
+    def setUp(self):
+        self.h = handlers.NewTapHandler()
+        self.taptests = [{'has':['foo']}]
+        self.new_tap_tel = Telex(other_dict={'.tap': self.taptests})
+        self.s = Switch()
+
+    def test_new_tap_handler_matches_tap_commands(self):
+        assert self.h.matches(self.new_tap_tel)
+        assert not self.h.matches(Telex(other_dict={'+foo':'bar'}))
+
+    def test_new_tap_handler_appropriate_a_forwarding_tap_handler_to_switch(self):
+        self.h.handle(self.new_tap_tel, closeipp, self.s)
+        is_correct_handler_type = lambda t: isinstance(t, handlers.ForwardingTapHandler)
+        a = filter(is_correct_handler_type, self.s.handlers)
+        assert a[0].to == closeipp
+        assert a[0].tests == self.taptests
+

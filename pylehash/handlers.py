@@ -68,3 +68,11 @@ class EndHandler(TapHandler):
         sees = map(ippstr, switch.bucket_for(telex['+end']).values()[:3])
         t = Telex(other_dict={'.see':sees})
         switch.send(telex=t, to=from_ipp)
+
+class NewTapHandler(TapHandler):
+    def __init__(self):
+        super(NewTapHandler, self).__init__([{'has': ['.tap']}])
+
+    def handle(self, telex, from_ipp, switch):
+        new_handler = ForwardingTapHandler(telex['.tap'], from_ipp)
+        switch.handlers.append(new_handler)
