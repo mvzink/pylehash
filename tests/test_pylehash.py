@@ -79,7 +79,7 @@ class TestSwitch(TestCase):
         s.complete_bootstrap(selfipp)
         s.transport = Mock()
         s.transport.write = Mock()
-        s.send(Telex(), faripp)
+        s.send(telex=Telex(), to=faripp)
         s.transport.write.assert_called_with(Telex().dumps(), faripp)
 
 
@@ -152,12 +152,13 @@ class TestTapHandler(TestCase):
             {'has': ['+foo', '+bar']},
             {'is': {'+foo': 'no_bar'}}
         ], faripp)
-        t.handle(self.match_both, s)
+        t.handle(self.match_both, closeipp, s)
         assert s.send.called
 
 class TestEndHandler(TestCase):
     def setUp(self):
         self.seeking_far = Telex(other_dict={'+end': hash.hexhash(faripp)})
+        self.from_ipp = closeipp
         self.t = handlers.EndHandler()
 
     def test_end_handler_only_matches_telexes_with_end_signals(self):
@@ -168,5 +169,7 @@ class TestEndHandler(TestCase):
         switch = Switch()
         switch.complete_bootstrap(selfipp)
         switch.send = Mock()
-        self.t.handle(self.seeking_far, switch)
+        self.t.handle(self.seeking_far, self.from_ipp, switch)
         assert switch.send.called
+        assert isinstance(switch.send.call_args[-1]['telex'], Telex)
+        assert switch.send.call_args[-1]['to'] == self.from_ipp

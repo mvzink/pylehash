@@ -32,13 +32,13 @@ class Switch(DatagramProtocol):
         print "Received ", telex, "from", ipp[0], ":", ipp[1], "#", self.count
         self.send(Telex(other_dict={'+foo':'bar'}), ipp)
 
-    def send(self, telex, ipp):
+    def send(self, telex=None, to=None):
         '''
         Writes the given telex to the transport, sending it to the given IPP
         
         TODO: (Optionally?) modify telex to increase _br, _to, _line etc.
         '''
-        self.transport.write(telex.dumps(), ipp)
+        self.transport.write(telex.dumps(), to)
     
     def complete_bootstrap(self, ipp):
         self.ipp = ipp

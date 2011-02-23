@@ -12,7 +12,7 @@ class TapHandler(object):
     def __init__(self, tests):
         self.tests = tests
 
-    def handle(self, telex, switch):
+    def handle(self, telex, from_ipp, switch):
         '''
         Should be overridden to actually handle the telex.
         '''
@@ -55,14 +55,17 @@ class ForwardingTapHandler(TapHandler):
         super(ForwardingTapHandler, self).__init__(tests)
         self.to = to
     
-    def handle(self, telex, switch):
-        switch.send(telex, self.to)
+    def handle(self, telex, from_ipp, switch):
+        '''
+        TODO: Test this
+        '''
+        switch.send(telex, telex=telex, to=self.to)
 
 class EndHandler(TapHandler):
     def __init__(self):
         super(EndHandler, self).__init__([{'has': ['+end']}])
     
-    def handle(self, telex, switch):
+    def handle(self, telex, from_ipp, switch):
         sees = []
         t = Telex(other_dict={'.see':sees})
-        switch.send(t)
+        switch.send(telex=t, to=from_ipp)
