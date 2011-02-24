@@ -15,6 +15,8 @@ Part of a class project viewable [here](http://brick.cs.uchicago.edu/Courses/CMS
 
 Current major to do list:
 
+* Seeding
+* A way to build a test network
 * _ring/_line mechanics
 * A .see handler
 * Correct external tap handling (depends on _ring/_line)
