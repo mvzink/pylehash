@@ -11,7 +11,6 @@ from pylehash import hash
 class Switch(DatagramProtocol):
     '''
     TODO: Document the Switch class
-    TODO: Add a repository of other Ends accessible by hash, IPPStr, IPPTuple, etc.
     '''
     def __init__(self):
         self.count = 0
@@ -23,7 +22,7 @@ class Switch(DatagramProtocol):
     def datagramReceived(self, datagram, addr):
         '''
         Tells the quasi-global state object to handle the telex, passing along
-        ourselves so things can be send
+        ourselves so things can be sent
         '''
         self.handle(Telex(data=datagram), addr)
 
@@ -38,7 +37,8 @@ class Switch(DatagramProtocol):
         
         TODO: (Optionally?) modify telex to increase _br, _to, _line etc.
         '''
-        self.transport.write(telex.dumps(), to)
+        if telex and to:
+            self.transport.write(telex.dumps(), to)
     
     def complete_bootstrap(self, ipp):
         self.ipp = ipp

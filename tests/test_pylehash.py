@@ -78,13 +78,17 @@ class TestSwitch(TestCase):
         p = self.s.bucket_for(faripp)
         assert self.s.buckets.index(p) == hash.distance(selfipp, faripp)
     
-    def test_switch_send_writes_to_transport(self):
+    def test_switch_send_writes_to_transport_iff_the_telex_is_not_empty(self):
         s = Switch()
         s.complete_bootstrap(selfipp)
         s.transport = Mock()
         s.transport.write = Mock()
-        s.send(telex=Telex(), to=faripp)
-        s.transport.write.assert_called_with(Telex().dumps(), faripp)
+        empty_tel = Telex()
+        s.send(telex=empty_tel, to=faripp)
+        assert not s.transport.write.called
+        tel = Telex(other_dict={'+foo':'bar'})
+        s.send(telex=tel, to=faripp)
+        s.transport.write.assert_called_with(tel.dumps(), faripp)
 
 
 class TestTelex(TestCase):
