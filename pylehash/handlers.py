@@ -6,7 +6,31 @@ Created on Feb 15, 2011
 
 from pylehash import ippstr, Telex
 
-class TapHandler(object):
+class Handler(object):
+    
+    def __call__(self, telex, from_ipp, switch):
+        if self.matches(telex, from_ipp, switch):
+            self.handle(telex, from_ipp, switch)
+
+    def handle(self, telex, from_ipp, switch):
+        '''
+        handler.handle(telex, from_ipp, switch) -> None
+        
+        Performs actions as appropriate based on the handler's own state and the
+        given telex, ipp, and switch state.
+        
+        Should be overridden by subclasses.
+        '''
+        pass
+    
+    def matches(self, telex, from_ipp, switch):
+        '''
+        handler.matches(telex, from_ipp, switch) -> True|False
+        
+        Returns True or 
+        '''
+
+class TapHandler(Handler):
 
     def __init__(self, tests):
         self.tests = tests
@@ -17,7 +41,7 @@ class TapHandler(object):
         '''
         pass
 
-    def matches(self, telex):
+    def matches(self, telex, from_ipp, switch):
         telex_matches = None
 
         # We test each case independently

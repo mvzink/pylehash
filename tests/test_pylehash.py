@@ -1,3 +1,7 @@
+'''
+TODO: Rename class fixture vars to be more informative
+'''
+
 from mock import Mock
 
 from test_stuff import TestCase, selfipp, closeipp, faripp
@@ -104,11 +108,33 @@ class TestTelex(TestCase):
         assert t.dumps() == '{"+test": "testing"}'
 
 
+class TestHandler(TestCase):
+    '''
+    Essentially only tests the __call__ prototype for calling handler.matches
+    and subsequently calling handler.handle iff handler.matches is true.
+    '''
+    def setUp(self):
+        self.h = handlers.Handler()
+        self.h.handle = Mock()
+        self.h.matches = Mock()
+        self.t = Telex()
+        self.s = Switch()
+
+    def test_handler_handle_is_called_if_it_matches(self):
+        self.h.matches.return_value = True
+        self.h(self.t, faripp, self.s)
+        assert self.h.handle.called
+
+    def test_handler_handle_is_not_called_if_it_doesnt_match(self):
+        self.h.matches.return_value = False
+        self.h(self.t, faripp, self.s)
+        assert not self.h.handle.called
+
 class TestTapHandler(TestCase):
     '''
     More than anything, this should serve as an example of how to write
     a handler class that conforms to the accepted protocol.
-    See pylehash.default_handlers for TapHandler.
+    See pylehash.handlers for TapHandler.
     '''
 
     def setUp(self):
@@ -137,10 +163,10 @@ class TestTapHandler(TestCase):
         })
 
     def test_tap_handler_correctly_and_safely_tests_for_matching_telexes(self):
-        assert self.t.matches(self.match_has)
-        assert self.t.matches(self.match_is)
-        assert self.t.matches(self.match_both)
-        assert not self.t.matches(self.no_match)
+        assert self.t.matches(self.match_has, faripp, Switch())
+        assert self.t.matches(self.match_is, faripp, Switch())
+        assert self.t.matches(self.match_both, faripp, Switch())
+        assert not self.t.matches(self.no_match, faripp, Switch())
     
     def test_forwarding_tap_handler_forwards_telex_when_called(self):
         # TODO: Also make sure the correct telex is being sent
@@ -152,7 +178,7 @@ class TestTapHandler(TestCase):
             {'has': ['+foo', '+bar']},
             {'is': {'+foo': 'no_bar'}}
         ], faripp)
-        t.handle(self.match_both, closeipp, s)
+        t(self.match_both, closeipp, s)
         assert s.send.called
 
 class TestEndHandler(TestCase):
@@ -162,15 +188,14 @@ class TestEndHandler(TestCase):
         self.t = handlers.EndHandler()
 
     def test_end_handler_only_matches_telexes_with_end_signals(self):
-        print(self.seeking_far)
-        assert self.t.matches(self.seeking_far)
+        assert self.t.matches(self.seeking_far, faripp, Switch())
 
     def test_end_handler_sends_list_of_ends_to_original_sender(self):
         switch = Switch()
         switch.complete_bootstrap(selfipp)
         switch.add_end(faripp)
         switch.send = Mock()
-        self.t.handle(self.seeking_far, self.from_ipp, switch)
+        self.t(self.seeking_far, self.from_ipp, switch)
         assert switch.send.called
         tel = switch.send.call_args[-1]['telex']
         assert isinstance(tel, Telex)
@@ -185,11 +210,11 @@ class TestNewTapHandler(TestCase):
         self.s = Switch()
 
     def test_new_tap_handler_matches_tap_commands(self):
-        assert self.h.matches(self.new_tap_tel)
-        assert not self.h.matches(Telex(other_dict={'+foo':'bar'}))
+        assert self.h.matches(self.new_tap_tel, faripp, self.s)
+        assert not self.h.matches(Telex(other_dict={'+foo':'bar'}), faripp, self.s)
 
     def test_new_tap_handler_appropriate_a_forwarding_tap_handler_to_switch(self):
-        self.h.handle(self.new_tap_tel, closeipp, self.s)
+        self.h(self.new_tap_tel, closeipp, self.s)
         is_correct_handler_type = lambda t: isinstance(t, handlers.ForwardingTapHandler)
         a = filter(is_correct_handler_type, self.s.handlers)
         assert a[0].to == closeipp
