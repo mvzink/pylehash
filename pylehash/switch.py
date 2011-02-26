@@ -14,7 +14,7 @@ class Switch(DatagramProtocol):
     def __init__(self):
         self.ipp = None
         self.buckets = []
-        self.handlers = []
+        self.handlers = {}
         for i in range(0,161):
             self.buckets.append({})
 
@@ -52,3 +52,8 @@ class Switch(DatagramProtocol):
     def add_end(self, ipp):
         self.bucket_for(ipp)[hash.hexhash(ipp)] = ipp
 
+    def add_handler(self, handler):
+        self.handlers[id(handler)] = handler
+
+    def remove_handler(self, handler):
+        self.handlers.pop(id(handler))

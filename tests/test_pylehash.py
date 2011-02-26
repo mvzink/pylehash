@@ -219,8 +219,36 @@ class TestNewTapHandler(TestCase):
 
     def test_new_tap_handler_appropriate_a_forwarding_tap_handler_to_switch(self):
         self.h(self.new_tap_tel, closeipp, self.s)
-        is_correct_handler_type = lambda t: isinstance(t, handlers.ForwardingTapHandler)
-        a = filter(is_correct_handler_type, self.s.handlers)
+        is_correct_handler_type = lambda k: isinstance(k, handlers.ForwardingTapHandler)
+        a = filter(is_correct_handler_type, self.s.handlers.values())
         assert a[0].to == closeipp
         assert a[0].tests == self.taptests
 
+class TestBootstrapHandler(TestCase):
+    def setUp(self):
+        self.h = handlers.BootstrapHandler(faripp)
+        self.telex_with_to = Telex(other_dict={'_to': '127.0.0.1:5555'})
+        self.telex_without_to = Telex(other_dict={'+foo': 'bar'})
+
+    def test_bootstrap_handler_matches_telexes_from_seeder_with_to(self):
+        assert self.h.matches(self.telex_with_to, faripp, Switch())
+
+    def test_bootstrap_handler_does_not_match_telex_from_wrong_ipp(self):
+        assert not self.h.matches(self.telex_with_to, closeipp, Switch())
+
+    def test_bootstrap_handler_does_not_match_telex_with_no_to(self):
+        assert not self.h.matches(self.telex_without_to, faripp, Switch())
+
+    def test_bootstrap_handler_sets_switch_ipp(self):
+        s = Switch()
+        s.remove_handler = Mock()
+        assert s.ipp == None
+        self.h(self.telex_with_to, faripp, s)
+        assert s.ipp == ('127.0.0.1', 5555)
+
+    def test_bootstrap_handler_adds_other_default_handlers_and_removes_itself(self):
+        s = Switch()
+        s.handlers = {id(self.h): self.h}
+        self.h(self.telex_with_to, faripp, s)
+        assert len(s.handlers) > 0
+        assert id(self.h) not in s.handlers

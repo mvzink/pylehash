@@ -4,7 +4,7 @@ Created on Feb 15, 2011
 @author: Michael Victor Zink <zuwiki@zuwiki.net>
 '''
 
-from pylehash import ippstr, Telex
+from pylehash import ippstr, ipptup, Telex
 
 class Handler(object):
     
@@ -99,4 +99,17 @@ class NewTapHandler(TapHandler):
 
     def handle(self, telex, from_ipp, switch):
         new_handler = ForwardingTapHandler(telex['.tap'], from_ipp)
-        switch.handlers.append(new_handler)
+        switch.add_handler(new_handler)
+
+class BootstrapHandler(Handler):
+    def __init__(self, ipp):
+        self.seed_ipp = ipp
+
+    def matches(self, telex, from_ipp, switch):
+        return switch.ipp == None and from_ipp == self.seed_ipp and '_to' in telex
+
+    def handle(self, telex, from_ipp, switch):
+        switch.ipp = ipptup(telex['_to'])
+        switch.add_handler(NewTapHandler())
+        switch.add_handler(EndHandler())
+        switch.remove_handler(self)

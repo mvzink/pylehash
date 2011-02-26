@@ -10,7 +10,6 @@ Part of a class project viewable [here][class project].
 Stuff that doesn't exist yet
 ----------------------------
 
-* Seeding
 * A way to build a test network
 * `_ring`/`_line` mechanics
 * A `.see` handler
