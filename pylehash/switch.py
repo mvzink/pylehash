@@ -5,7 +5,6 @@ Created on Feb 3, 2011
 '''
 
 from twisted.internet.protocol import DatagramProtocol
-from pylehash.telex import Telex
 from pylehash import hash
 
 class Switch(DatagramProtocol):
@@ -13,7 +12,7 @@ class Switch(DatagramProtocol):
     TODO: Document the Switch class
     '''
     def __init__(self):
-        self.count = 0
+        self.ipp = None
         self.buckets = []
         self.handlers = []
         for i in range(0,161):
