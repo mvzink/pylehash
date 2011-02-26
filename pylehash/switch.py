@@ -38,9 +38,6 @@ class Switch(DatagramProtocol):
         '''
         if telex and to:
             self.transport.write(telex.dumps(), to)
-    
-    def complete_bootstrap(self, ipp):
-        self.ipp = ipp
 
     def bucket_for(self, ipp):
         d = self.distance(ipp)

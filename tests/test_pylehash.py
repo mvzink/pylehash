@@ -61,7 +61,7 @@ class TestSwitch(TestCase):
 
     def setUp(self):
         self.s = Switch()
-        self.s.complete_bootstrap(selfipp)
+        self.s.ipp = selfipp
 
     def test_switch_complete_bootstrap(self):
         assert self.s.ipp == selfipp
@@ -80,7 +80,7 @@ class TestSwitch(TestCase):
     
     def test_switch_send_writes_to_transport_iff_the_telex_is_not_empty(self):
         s = Switch()
-        s.complete_bootstrap(selfipp)
+        s.ipp = selfipp
         s.transport = Mock()
         s.transport.write = Mock()
         empty_tel = Telex()
@@ -176,7 +176,7 @@ class TestTapHandler(TestCase):
         # TODO: Also make sure the correct telex is being sent
         #   i.e. _hop increased, _br, etc. but otherwise the same
         s = Switch()
-        s.complete_bootstrap(selfipp)
+        s.ipp = selfipp
         s.send = Mock()
         t = handlers.ForwardingTapHandler([
             {'has': ['+foo', '+bar']},
@@ -196,7 +196,7 @@ class TestEndHandler(TestCase):
 
     def test_end_handler_sends_list_of_ends_to_original_sender(self):
         switch = Switch()
-        switch.complete_bootstrap(selfipp)
+        switch.ipp = selfipp
         switch.add_end(faripp)
         switch.send = Mock()
         self.t(self.seeking_far, self.from_ipp, switch)
