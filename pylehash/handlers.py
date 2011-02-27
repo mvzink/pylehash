@@ -110,6 +110,9 @@ class BootstrapHandler(Handler):
 
     def handle(self, telex, from_ipp, switch):
         switch.ipp = ipptup(telex['_to'])
-        switch.add_handler(NewTapHandler())
-        switch.add_handler(EndHandler())
+        for handler in default_handlers():
+            switch.add_handler(handler)
         switch.remove_handler(self)
+
+def default_handlers():
+    return [NewTapHandler(), EndHandler()]

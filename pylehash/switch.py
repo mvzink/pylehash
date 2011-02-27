@@ -11,12 +11,18 @@ class Switch(DatagramProtocol):
     '''
     TODO: Document the Switch class
     '''
-    def __init__(self, seed_ipp=('telehash.org', 42424)):
+    def __init__(self, seed_ipp=None):
         self.ipp = None
         self.buckets = []
         self.handlers = {}
-        self.add_handler(handlers.BootstrapHandler(seed_ipp))
-        for i in range(0,161):
+
+        if seed_ipp:
+            self.add_handler(handlers.BootstrapHandler(seed_ipp))
+        else:
+            for handler in handlers.default_handlers():
+                self.add_handler(handler)
+
+        for _ in range(0,161):
             self.buckets.append({})
 
     def datagramReceived(self, datagram, addr):
@@ -32,7 +38,7 @@ class Switch(DatagramProtocol):
         '''
         Runs the given telex and sender by all our current handlers.
         '''
-        print("Received ", telex, "from", ipp[0], ":", ipp[1])
+        print "Received ", telex, "from", ipp[0], ":", ipp[1]
         for handler in self.handlers.values():
             handler(telex, ipp, self)
 
