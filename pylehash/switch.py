@@ -32,7 +32,7 @@ class Switch(DatagramProtocol):
         '''
         Runs the given telex and sender by all our current handlers.
         '''
-        print "Received ", telex, "from", ipp[0], ":", ipp[1]
+        print("Received ", telex, "from", ipp[0], ":", ipp[1])
         for handler in self.handlers.values():
             handler(telex, ipp, self)
 
@@ -51,7 +51,7 @@ class Switch(DatagramProtocol):
         return self.buckets[d]
 
     def distance(self, ipp):
-		return hash.distance(self.ipp, ipp)
+        return hash.distance(self.ipp, ipp)
 
     def add_end(self, ipp):
         self.bucket_for(ipp)[hash.hexhash(ipp)] = ipp

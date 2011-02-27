@@ -4,7 +4,6 @@ Created on Feb 3, 2011
 @author: Michael Victor Zink <zuwiki@zuwiki.net>
 '''
 
-import pylehash #@UnresolvedImport @UnusedImport
 import simplejson as json
 
 class Telex(dict):

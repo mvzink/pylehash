@@ -11,7 +11,7 @@ def ipptup(ipp):
     ip, p = ipp.split(':')
     return (ip, int(p))
 
-from telex import Telex
-from switch import Switch
+from .telex import Telex
+from .switch import Switch
 import hash
 import handlers

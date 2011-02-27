@@ -27,11 +27,11 @@ class TestHash(TestCase):
 
     def test_hexbin_long(self):
         hexval = 'bc117be99339576519af05e91d51376feabd4706'
-        longval = 1073680171875912199119184443246291065335917135622L
+        longval = 1073680171875912199119184443246291065335917135622
         assert hash.hexbin(hexval) == longval
 
     def test_binhash_arbitrary_string(self):
-        longval = 1073680171875912199119184443246291065335917135622L
+        longval = 1073680171875912199119184443246291065335917135622
         assert hash.binhash('127.0.0.1:5555') == longval
 
     def test_distance_to_self_is_zero(self):
