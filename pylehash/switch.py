@@ -5,7 +5,7 @@ Created on Feb 3, 2011
 '''
 
 from twisted.internet.protocol import DatagramProtocol
-from pylehash import hash, handlers, Telex
+from pylehash import hash, handlers, Telex, ippstr
 
 class Switch(DatagramProtocol):
     '''
@@ -17,13 +17,25 @@ class Switch(DatagramProtocol):
         self.handlers = {}
 
         if seed_ipp:
+            self.seed_ipp = seed_ipp
             self.add_handler(handlers.BootstrapHandler(seed_ipp))
         else:
+            self.seed_ipp = False
             for handler in handlers.default_handlers():
                 self.add_handler(handler)
 
         for _ in range(0,161):
             self.buckets.append({})
+
+    def startProtocol(self):
+        '''
+        Sends a useless telex to a seed in hopes of getting something back and
+        learning our IPP. Only does so if we don't have an IPP but do have a
+        seed to contact.
+        '''
+        if self.ipp == None and self.seed_ipp != False:
+            t = Telex(other_dict={'+end':hash.hexhash('bootstrap')})
+            self.send(t, self.seed_ipp)
 
     def datagramReceived(self, datagram, addr):
         '''
@@ -50,6 +62,7 @@ class Switch(DatagramProtocol):
         Also see question in switch.handle()'s docstring
         '''
         if telex and to:
+            telex['_to'] = ippstr(to)
             self.transport.write(telex.dumps(), to)
 
     def bucket_for(self, ipp):
