@@ -10,15 +10,15 @@ Part of a class project viewable [here][class project].
 Stuff that doesn't exist yet
 ----------------------------
 
-* A way to build a test network
-* `_ring`/`_line` mechanics
+Ordered roughly by priority to the end of having a working switch
+
 * A `.see` handler
-* Actually using the handlers for handling
-* Correct external tap handling (depends on `_ring`/`_line`)
+* `_hop` and `_br`
+* `_ring`/`_line` mechanics
 * Correct k-bucket mechanics
 	* Not filling up, checking that they exist, etc.
-* Traffic congestion management utilities
-	* `_hop` and `_br`
+* Correct external tap management (depends on `_ring`/`_line`)
+* An *easy* way to build a test network
 
 In general terms, how it works
 ------------------------------

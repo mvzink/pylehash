@@ -58,8 +58,8 @@ class Switch(DatagramProtocol):
         '''
         Writes the given telex to the transport, sending it to the given IPP
         
-        TODO: (Optionally?) modify telex to increase _br, _to, _line etc.
-        Also see question in switch.handle()'s docstring
+        TODO: (Optionally?) modify telex to include _br, _to, _line etc.
+        Also see question in NOTES.txt
         '''
         if telex and to:
             telex['_to'] = ippstr(to)
