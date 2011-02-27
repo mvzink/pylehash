@@ -21,12 +21,17 @@ class Switch(DatagramProtocol):
 
     def datagramReceived(self, datagram, addr):
         '''
-        Tells the quasi-global state object to handle the telex, passing along
-        ourselves so things can be sent
+        Called by the Twisted framework when a UDP packet arrives.
+        
+        Turns the datagram into a Telex and calles switch.handle on it with the
+        address of the sender.
         '''
         self.handle(Telex(data=datagram), addr)
 
     def handle(self, telex, ipp):
+        '''
+        Runs the given telex and sender by all our current handlers.
+        '''
         print "Received ", telex, "from", ipp[0], ":", ipp[1]
         for handler in self.handlers.values():
             handler(telex, ipp, self)
@@ -36,6 +41,7 @@ class Switch(DatagramProtocol):
         Writes the given telex to the transport, sending it to the given IPP
         
         TODO: (Optionally?) modify telex to increase _br, _to, _line etc.
+        Also see question in switch.handle()'s docstring
         '''
         if telex and to:
             self.transport.write(telex.dumps(), to)

@@ -1,0 +1,15 @@
+Question to consider: to avoid, for example, several handlers sending
+multiple packets to the same end at the same time, it is possible that
+a sort of buffering approach could be used. switch.send() would
+aggregate the telex data and associate it with the receiving IPP.
+Then, switch.handle would 'flush' all of these outgoing telexes and
+actually write them to the transport. Exceptions would exist, though
+(for example, forwarding telexes for taps) but that could be overcome
+with a flag to switch.send(), or even just an alternate send method.
+Another note to consider: transport.write(), because of how Twisted
+works, would not actually write the data to the network until we return
+execution control to the reactor. In other words, all of these handlers
+end up calling transport.write(), but none of it is actually written
+until all the handlers have been called and switch.handler() finishes.
+This means the performance/realtimeness wouldn't really be affected
+other than by the added complexity of aggregating the telexes.
