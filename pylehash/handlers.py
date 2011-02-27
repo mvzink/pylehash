@@ -82,7 +82,7 @@ class ForwardingTapHandler(TapHandler):
         '''
         TODO: Test this
         '''
-        switch.send(telex, telex=telex, to=self.to)
+        switch.send(telex=telex, to=self.to)
 
 class EndHandler(TapHandler):
     def __init__(self):

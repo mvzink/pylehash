@@ -172,18 +172,35 @@ class TestTapHandler(TestCase):
         assert self.t.matches(self.match_both, faripp, Switch())
         assert not self.t.matches(self.no_match, faripp, Switch())
     
-    def test_forwarding_tap_handler_forwards_telex_when_called(self):
-        # TODO: Also make sure the correct telex is being sent
-        #   i.e. _hop increased, _br, etc. but otherwise the same
-        s = Switch()
-        s.ipp = selfipp
-        s.send = Mock()
-        t = handlers.ForwardingTapHandler([
+
+class TestForwardingTapHandler(TestCase):
+    
+    def setUp(self):
+        self.s = Switch()
+        self.s.ipp = selfipp
+        self.s.transport = Mock()
+        self.s.transport.write = Mock()
+        self.h = handlers.ForwardingTapHandler([
             {'has': ['+foo', '+bar']},
             {'is': {'+foo': 'no_bar'}}
         ], faripp)
-        t(self.match_both, closeipp, s)
-        assert s.send.called
+        self.match_both = Telex(other_dict={
+            '+foo': 'no_bar',
+            '+bar': 'except_still_a_bar'
+        })
+        self.no_match = Telex(other_dict={
+            '+foo': 'where_is_the_bar'
+        })
+
+    def test_forwarding_tap_handler_forwards_matching_telex_when_called(self):
+        # TODO: Also make sure the correct telex is being sent
+        #   i.e. _hop increased, _br, etc. but otherwise the same
+        self.h(self.match_both, closeipp, self.s)
+        assert self.s.transport.write.called
+
+    def test_forwarding_tap_handler_does_not_forward_non_matching_telex(self):
+        self.h(self.no_match, closeipp, self.s)
+        assert not self.s.transport.write.called
 
 class TestEndHandler(TestCase):
     def setUp(self):
