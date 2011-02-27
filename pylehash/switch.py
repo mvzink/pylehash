@@ -5,16 +5,17 @@ Created on Feb 3, 2011
 '''
 
 from twisted.internet.protocol import DatagramProtocol
-from pylehash import hash
+from pylehash import hash, handlers, Telex
 
 class Switch(DatagramProtocol):
     '''
     TODO: Document the Switch class
     '''
-    def __init__(self):
+    def __init__(self, seed_ipp=('telehash.org', 42424)):
         self.ipp = None
         self.buckets = []
         self.handlers = {}
+        self.add_handler(handlers.BootstrapHandler(seed_ipp))
         for i in range(0,161):
             self.buckets.append({})
 
@@ -26,9 +27,9 @@ class Switch(DatagramProtocol):
         self.handle(Telex(data=datagram), addr)
 
     def handle(self, telex, ipp):
-        self.count += 1
-        print "Received ", telex, "from", ipp[0], ":", ipp[1], "#", self.count
-        self.send(Telex(other_dict={'+foo':'bar'}), ipp)
+        print "Received ", telex, "from", ipp[0], ":", ipp[1]
+        for handler in self.handlers.values():
+            handler(telex, ipp, self)
 
     def send(self, telex=None, to=None):
         '''
