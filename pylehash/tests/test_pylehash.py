@@ -1,4 +1,8 @@
 '''
+Created on Feb 7, 2011
+
+@author: Michael Victor Zink <zuwiki@zuwiki.net>
+
 TODO: Rename class fixture vars to be more informative
 '''
 
@@ -89,7 +93,6 @@ class TestSwitch(TestCase):
         tel = Telex(other_dict={'+foo':'bar'})
         s.send(telex=tel, to=faripp)
         s.transport.write.assert_called_with(tel.dumps(), faripp)
-
 
 class TestTelex(TestCase):
 
