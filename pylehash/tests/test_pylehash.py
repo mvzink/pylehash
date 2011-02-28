@@ -8,7 +8,7 @@ TODO: Rename class fixture vars to be more informative
 
 from mock import Mock
 
-from test_stuff import TestCase, selfipp, closeipp, faripp
+from test_stuff import TestCase, selfipp, closeipp, closeipp2, closeipp3, mediumipp, faripp
 from pylehash import hash, Telex, Switch, End, handlers, ippstr
 
 class TestHash(TestCase):
@@ -298,3 +298,21 @@ class TestBootstrapHandler(TestCase):
         self.h(self.telex_with_to, End(faripp), s)
         assert len(s.handlers) > 0
         assert id(self.h) not in s.handlers
+
+class TestSeeHandler(TestCase):
+
+    def setUp(self):
+        self.h = handlers.SeeHandler()
+        self.s = Switch()
+        self.s.ipp = selfipp
+        self.s.add_end = Mock()
+        self.t = Telex(other_dict={'.see': map(ippstr, [closeipp2, closeipp3, mediumipp])})
+        self.no_match = Telex(other_dict={'+foo': 'bar'})
+
+    def test_see_handler_matches_correctly(self):
+        assert self.h.matches(self.t, End(closeipp), self.s)
+        assert not self.h.matches(self.no_match, End(closeipp), self.s)
+
+    def test_see_handler_tells_switch_to_add_ends(self):
+        self.h(self.t, End(closeipp), self.s)
+        assert self.s.add_end.called

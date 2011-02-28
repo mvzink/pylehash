@@ -36,8 +36,8 @@ class Switch(DatagramProtocol):
         seed to contact.
         '''
         if self.ipp == None and self.seed_ipp != None:
-            t = Telex(other_dict={'+end':hash.hexhash('bootstrap')})
-            self.send(t, self.seed_ipp)
+            t = Telex(other_dict={'+end':hash.hexhash('1.2.3.4:5555')})
+            self.send(t, End(self.seed_ipp))
 
     def datagramReceived(self, datagram, addr):
         '''
@@ -54,7 +54,7 @@ class Switch(DatagramProtocol):
         '''
         print "Received ", telex, "from", ipp[0], ":", ipp[1]
         for handler in self.handlers.values():
-            handler(telex, ipp, self)
+            handler(telex, End(ipp), self)
 
     def send(self, telex=None, to=None):
         '''

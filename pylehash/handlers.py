@@ -8,6 +8,9 @@ from .telex import Telex
 from .end import End
 from .util import ippstr, ipptup
 
+def default_handlers():
+    return [NewTapHandler(), EndHandler(), SeeHandler()]
+
 class Handler(object):
     
     def __call__(self, telex, from_end, switch):
@@ -116,5 +119,10 @@ class BootstrapHandler(Handler):
             switch.add_handler(handler)
         switch.remove_handler(self)
 
-def default_handlers():
-    return [NewTapHandler(), EndHandler()]
+class SeeHandler(TapHandler):
+
+    def __init__(self):
+        super(SeeHandler, self).__init__([{'has': ['.see']}])
+
+    def handle(self, telex, from_end, switch):
+        switch.add_end(from_end)
