@@ -6,27 +6,30 @@ Created on Feb 3, 2011
 
 from hashlib import sha1
 from math import floor, log
-from pylehash import ippstr
+from .util import ippstr
+from .end import End
 
-def hexhash(ipp):
-    if isinstance(ipp, str):
-        return sha1(ipp).hexdigest()
-    elif isinstance(ipp, tuple):
-        return hexhash(ippstr(ipp))
+def hexhash(end):
+    if isinstance(end, End):
+        return hexhash(end.ipp)
+    elif isinstance(end, tuple):
+        return hexhash(ippstr(end))
+    elif isinstance(end, str):
+        return sha1(end).hexdigest()
 
 def hexbin(hex):
     return int(hex, 16)
 
-def binhash(ipp):
-    return hexbin(hexhash(ipp))
+def binhash(end):
+    return hexbin(hexhash(end))
     
 def distance(hash1, hash2):
-    if isinstance(hash1, tuple):
+    if isinstance(hash1, tuple) or isinstance(hash1, End):
         a = binhash(hash1)
     else:
         a = hexbin(hash1)
 
-    if isinstance(hash2, tuple):
+    if isinstance(hash2, tuple) or isinstance(hash2, End):
         b = binhash(hash2)
     else:
         b = hexbin(hash2)

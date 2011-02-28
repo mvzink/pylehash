@@ -5,7 +5,10 @@ Created on Feb 3, 2011
 '''
 
 from twisted.internet.protocol import DatagramProtocol
-from pylehash import hash, handlers, Telex, ippstr
+import hash, handlers
+from .telex import Telex
+from .end import End
+from .util import ippstr
 
 class Switch(DatagramProtocol):
     '''
@@ -61,18 +64,21 @@ class Switch(DatagramProtocol):
         Also see question in NOTES.txt
         '''
         if telex and to:
-            telex['_to'] = ippstr(to)
-            self.transport.write(telex.dumps(), to)
+            telex['_to'] = ippstr(to.ipp)
+            self.transport.write(telex.dumps(), to.ipp)
 
-    def bucket_for(self, ipp):
-        d = self.distance(ipp)
+    def bucket_for(self, end):
+        d = self.distance(end)
         return self.buckets[d]
 
-    def distance(self, ipp):
-        return hash.distance(self.ipp, ipp)
+    def distance(self, end):
+        if isinstance(end, End):
+            return hash.distance(self.ipp, end.ipp)
+        elif isinstance(end, str):
+            return hash.distance(hash.hexhash(self.ipp), end)
 
-    def add_end(self, ipp):
-        self.bucket_for(ipp)[hash.hexhash(ipp)] = ipp
+    def add_end(self, end):
+        self.bucket_for(end)[hash.hexhash(end)] = end
 
     def add_handler(self, handler):
         self.handlers[id(handler)] = handler

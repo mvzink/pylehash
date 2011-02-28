@@ -9,7 +9,7 @@ TODO: Rename class fixture vars to be more informative
 from mock import Mock
 
 from test_stuff import TestCase, selfipp, closeipp, faripp
-from pylehash import hash, Telex, Switch, handlers, ippstr
+from pylehash import hash, Telex, Switch, End, handlers, ippstr
 
 class TestHash(TestCase):
     
@@ -71,27 +71,27 @@ class TestSwitch(TestCase):
         assert self.s.ipp == selfipp
         
     def test_switch_add_end_adds_end(self):
-        self.s.add_end(closeipp)
-        assert self.s.bucket_for(closeipp)[hash.hexhash(closeipp)]
+        self.s.add_end(End(closeipp))
+        assert self.s.bucket_for(End(closeipp))[hash.hexhash(closeipp)]
 
     def test_switch_bucket_for_gives_correct_bucket(self):
-        self.s.add_end(closeipp)
-        o = self.s.bucket_for(closeipp)
+        self.s.add_end(End(closeipp))
+        o = self.s.bucket_for(End(closeipp))
         assert self.s.buckets.index(o) == hash.distance(selfipp, closeipp)
-        self.s.add_end(faripp)
-        p = self.s.bucket_for(faripp)
+        self.s.add_end(End(faripp))
+        p = self.s.bucket_for(End(faripp))
         assert self.s.buckets.index(p) == hash.distance(selfipp, faripp)
-    
+
     def test_switch_send_writes_to_transport_iff_the_telex_is_not_empty(self):
         s = Switch()
         s.ipp = selfipp
         s.transport = Mock()
         s.transport.write = Mock()
         empty_tel = Telex()
-        s.send(telex=empty_tel, to=faripp)
+        s.send(telex=empty_tel, to=End(faripp))
         assert not s.transport.write.called
         tel = Telex(other_dict={'+foo':'bar'})
-        s.send(telex=tel, to=faripp)
+        s.send(telex=tel, to=End(faripp))
         s.transport.write.assert_called_with(tel.dumps(), faripp)
 
     def test_switch_start_protocol_sends_bootstrap_telex_under_correct_conditions(self):
@@ -104,6 +104,19 @@ class TestSwitch(TestCase):
         s_should_not_send.send = Mock()
         s_should_not_send.startProtocol()
         assert not s_should_not_send.send.called
+
+
+class TestEnd(TestCase):
+
+    def test_end_inits_with_and_provides_access_to_ipp_tuple(self):
+        e = End(closeipp)
+        assert e.ipp == closeipp
+
+    def test_end_tracks_bytes_received(self):
+        e = End(closeipp)
+        assert e.br == 0
+        e.br += 52
+        assert e.br == 52
 
 
 class TestTelex(TestCase):
@@ -141,12 +154,12 @@ class TestHandler(TestCase):
 
     def test_handler_handle_is_called_if_it_matches(self):
         self.h.matches.return_value = True
-        self.h(self.t, faripp, self.s)
+        self.h(self.t, End(faripp), self.s)
         assert self.h.handle.called
 
     def test_handler_handle_is_not_called_if_it_doesnt_match(self):
         self.h.matches.return_value = False
-        self.h(self.t, faripp, self.s)
+        self.h(self.t, End(faripp), self.s)
         assert not self.h.handle.called
 
 class TestTapHandler(TestCase):
@@ -182,10 +195,10 @@ class TestTapHandler(TestCase):
         })
 
     def test_tap_handler_correctly_and_safely_tests_for_matching_telexes(self):
-        assert self.t.matches(self.match_has, faripp, Switch())
-        assert self.t.matches(self.match_is, faripp, Switch())
-        assert self.t.matches(self.match_both, faripp, Switch())
-        assert not self.t.matches(self.no_match, faripp, Switch())
+        assert self.t.matches(self.match_has, End(faripp), Switch())
+        assert self.t.matches(self.match_is, End(faripp), Switch())
+        assert self.t.matches(self.match_both, End(faripp), Switch())
+        assert not self.t.matches(self.no_match, End(faripp), Switch())
     
 
 class TestForwardingTapHandler(TestCase):
@@ -198,7 +211,7 @@ class TestForwardingTapHandler(TestCase):
         self.h = handlers.ForwardingTapHandler([
             {'has': ['+foo', '+bar']},
             {'is': {'+foo': 'no_bar'}}
-        ], faripp)
+        ], End(faripp))
         self.match_both = Telex(other_dict={
             '+foo': 'no_bar',
             '+bar': 'except_still_a_bar'
@@ -210,33 +223,33 @@ class TestForwardingTapHandler(TestCase):
     def test_forwarding_tap_handler_forwards_matching_telex_when_called(self):
         # TODO: Also make sure the correct telex is being sent
         #   i.e. _hop increased, _br, etc. but otherwise the same
-        self.h(self.match_both, closeipp, self.s)
+        self.h(self.match_both, End(closeipp), self.s)
         assert self.s.transport.write.called
 
     def test_forwarding_tap_handler_does_not_forward_non_matching_telex(self):
-        self.h(self.no_match, closeipp, self.s)
+        self.h(self.no_match, End(closeipp), self.s)
         assert not self.s.transport.write.called
 
 class TestEndHandler(TestCase):
     def setUp(self):
         self.seeking_far = Telex(other_dict={'+end': hash.hexhash(faripp)})
-        self.from_ipp = closeipp
+        self.from_end = End(closeipp)
         self.t = handlers.EndHandler()
 
     def test_end_handler_only_matches_telexes_with_end_signals(self):
-        assert self.t.matches(self.seeking_far, faripp, Switch())
+        assert self.t.matches(self.seeking_far, End(faripp), Switch())
 
     def test_end_handler_sends_list_of_ends_to_original_sender(self):
         switch = Switch()
         switch.ipp = selfipp
-        switch.add_end(faripp)
+        switch.add_end(End(faripp))
         switch.send = Mock()
-        self.t(self.seeking_far, self.from_ipp, switch)
+        self.t(self.seeking_far, self.from_end, switch)
         assert switch.send.called
         tel = switch.send.call_args[-1]['telex']
         assert isinstance(tel, Telex)
         assert ippstr(faripp) in tel['.see']
-        assert switch.send.call_args[-1]['to'] == self.from_ipp
+        assert switch.send.call_args[-1]['to'] == self.from_end
 
 class TestNewTapHandler(TestCase):
     def setUp(self):
@@ -246,14 +259,15 @@ class TestNewTapHandler(TestCase):
         self.s = Switch()
 
     def test_new_tap_handler_matches_tap_commands(self):
-        assert self.h.matches(self.new_tap_tel, faripp, self.s)
-        assert not self.h.matches(Telex(other_dict={'+foo':'bar'}), faripp, self.s)
+        assert self.h.matches(self.new_tap_tel, End(faripp), self.s)
+        assert not self.h.matches(Telex(other_dict={'+foo':'bar'}), End(faripp), self.s)
 
     def test_new_tap_handler_appropriate_a_forwarding_tap_handler_to_switch(self):
-        self.h(self.new_tap_tel, closeipp, self.s)
+        e = End(closeipp)
+        self.h(self.new_tap_tel, e, self.s)
         is_correct_handler_type = lambda k: isinstance(k, handlers.ForwardingTapHandler)
         a = filter(is_correct_handler_type, self.s.handlers.values())
-        assert a[0].to == closeipp
+        assert a[0].to == e
         assert a[0].tests == self.taptests
 
 class TestBootstrapHandler(TestCase):
@@ -263,24 +277,24 @@ class TestBootstrapHandler(TestCase):
         self.telex_without_to = Telex(other_dict={'+foo': 'bar'})
 
     def test_bootstrap_handler_matches_telexes_from_seeder_with_to(self):
-        assert self.h.matches(self.telex_with_to, faripp, Switch())
+        assert self.h.matches(self.telex_with_to, End(faripp), Switch())
 
     def test_bootstrap_handler_does_not_match_telex_from_wrong_ipp(self):
-        assert not self.h.matches(self.telex_with_to, closeipp, Switch())
+        assert not self.h.matches(self.telex_with_to, End(closeipp), Switch())
 
     def test_bootstrap_handler_does_not_match_telex_with_no_to(self):
-        assert not self.h.matches(self.telex_without_to, faripp, Switch())
+        assert not self.h.matches(self.telex_without_to, End(faripp), Switch())
 
     def test_bootstrap_handler_sets_switch_ipp(self):
         s = Switch()
         s.remove_handler = Mock()
         assert s.ipp == None
-        self.h(self.telex_with_to, faripp, s)
+        self.h(self.telex_with_to, End(faripp), s)
         assert s.ipp == ('127.0.0.1', 5555)
 
     def test_bootstrap_handler_adds_other_default_handlers_and_removes_itself(self):
         s = Switch()
         s.handlers = {id(self.h): self.h}
-        self.h(self.telex_with_to, faripp, s)
+        self.h(self.telex_with_to, End(faripp), s)
         assert len(s.handlers) > 0
         assert id(self.h) not in s.handlers

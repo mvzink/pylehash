@@ -4,17 +4,19 @@ Created on Feb 15, 2011
 @author: Michael Victor Zink <zuwiki@zuwiki.net>
 '''
 
-from pylehash import ippstr, ipptup, Telex
+from .telex import Telex
+from .end import End
+from .util import ippstr, ipptup
 
 class Handler(object):
     
-    def __call__(self, telex, from_ipp, switch):
-        if self.matches(telex, from_ipp, switch):
-            self.handle(telex, from_ipp, switch)
+    def __call__(self, telex, from_end, switch):
+        if self.matches(telex, from_end, switch):
+            self.handle(telex, from_end, switch)
 
-    def handle(self, telex, from_ipp, switch):
+    def handle(self, telex, from_end, switch):
         '''
-        handler.handle(telex, from_ipp, switch) -> None
+        handler.handle(telex, from_end, switch) -> None
         
         Performs actions as appropriate based on the handler's own state and the
         given telex, ipp, and switch state.
@@ -23,9 +25,9 @@ class Handler(object):
         '''
         pass
     
-    def matches(self, telex, from_ipp, switch):
+    def matches(self, telex, from_end, switch):
         '''
-        handler.matches(telex, from_ipp, switch) -> True|False
+        handler.matches(telex, from_end, switch) -> True|False
         
         Returns True or 
         '''
@@ -35,13 +37,13 @@ class TapHandler(Handler):
     def __init__(self, tests):
         self.tests = tests
 
-    def handle(self, telex, from_ipp, switch):
+    def handle(self, telex, from_end, switch):
         '''
         Should be overridden to actually handle the telex.
         '''
         pass
 
-    def matches(self, telex, from_ipp, switch):
+    def matches(self, telex, from_end, switch):
         telex_matches = None
 
         # We test each case independently
@@ -78,7 +80,7 @@ class ForwardingTapHandler(TapHandler):
         super(ForwardingTapHandler, self).__init__(tests)
         self.to = to
     
-    def handle(self, telex, from_ipp, switch):
+    def handle(self, telex, from_end, switch):
         '''
         TODO: Test this
         '''
@@ -88,27 +90,27 @@ class EndHandler(TapHandler):
     def __init__(self):
         super(EndHandler, self).__init__([{'has': ['+end']}])
     
-    def handle(self, telex, from_ipp, switch):
-        sees = map(ippstr, switch.bucket_for(telex['+end']).values()[:3])
+    def handle(self, telex, from_end, switch):
+        sees = map(lambda e: ippstr(e.ipp), switch.bucket_for(telex['+end']).values()[:3])
         t = Telex(other_dict={'.see':sees})
-        switch.send(telex=t, to=from_ipp)
+        switch.send(telex=t, to=from_end)
 
 class NewTapHandler(TapHandler):
     def __init__(self):
         super(NewTapHandler, self).__init__([{'has': ['.tap']}])
 
-    def handle(self, telex, from_ipp, switch):
-        new_handler = ForwardingTapHandler(telex['.tap'], from_ipp)
+    def handle(self, telex, from_end, switch):
+        new_handler = ForwardingTapHandler(telex['.tap'], from_end)
         switch.add_handler(new_handler)
 
 class BootstrapHandler(Handler):
     def __init__(self, ipp):
         self.seed_ipp = ipp
 
-    def matches(self, telex, from_ipp, switch):
-        return switch.ipp == None and from_ipp == self.seed_ipp and '_to' in telex
+    def matches(self, telex, from_end, switch):
+        return switch.ipp == None and from_end.ipp == self.seed_ipp and '_to' in telex
 
-    def handle(self, telex, from_ipp, switch):
+    def handle(self, telex, from_end, switch):
         switch.ipp = ipptup(telex['_to'])
         for handler in default_handlers():
             switch.add_handler(handler)
