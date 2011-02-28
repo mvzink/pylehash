@@ -86,6 +86,15 @@ class ForwardingTapHandler(TapHandler):
         '''
         TODO: Test this
         '''
+
+        if '_hop' in telex:
+            if telex['_hop'] > 4:
+                return None
+            else:
+                telex['_hop'] += 1
+        else:
+            telex['_hop'] = 1
+
         switch.send(telex=telex, to=self.to)
 
 class EndHandler(TapHandler):

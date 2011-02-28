@@ -208,8 +208,7 @@ class TestForwardingTapHandler(TestCase):
     def setUp(self):
         self.s = Switch()
         self.s.ipp = selfipp
-        self.s.transport = Mock()
-        self.s.transport.write = Mock()
+        self.s.send = Mock()
         self.h = handlers.ForwardingTapHandler([
             {'has': ['+foo', '+bar']},
             {'is': {'+foo': 'no_bar'}}
@@ -221,16 +220,24 @@ class TestForwardingTapHandler(TestCase):
         self.no_match = Telex(other_dict={
             '+foo': 'where_is_the_bar'
         })
+        self.too_hopped_up = Telex(other_dict={
+            '+foo': 'no_bar',
+            '_hop': 5
+        })
 
     def test_forwarding_tap_handler_forwards_matching_telex_when_called(self):
         # TODO: Also make sure the correct telex is being sent
         #   i.e. _hop increased, _br, etc. but otherwise the same
         self.h(self.match_both, End(closeipp), self.s)
-        assert self.s.transport.write.called
+        assert self.s.send.called
 
     def test_forwarding_tap_handler_does_not_forward_non_matching_telex(self):
         self.h(self.no_match, End(closeipp), self.s)
-        assert not self.s.transport.write.called
+        assert not self.s.send.called
+
+    def test_forwarding_tap_handler_does_not_forward_telex_with_too_many_hops(self):
+        self.h(self.too_hopped_up, End(closeipp), self.s)
+        assert not self.s.send.called
 
 class TestEndHandler(TestCase):
     def setUp(self):

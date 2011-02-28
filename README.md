@@ -12,8 +12,6 @@ Stuff that doesn't exist yet
 
 Ordered roughly by priority to the end of having a working switch
 
-* A `.see` handler
-* `_hop` and `_br`
 * `_ring`/`_line` mechanics
 * Correct k-bucket mechanics
 	* Not filling up, checking that they exist, etc.
