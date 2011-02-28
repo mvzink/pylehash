@@ -94,6 +94,18 @@ class TestSwitch(TestCase):
         s.send(telex=tel, to=faripp)
         s.transport.write.assert_called_with(tel.dumps(), faripp)
 
+    def test_switch_start_protocol_sends_bootstrap_telex_under_correct_conditions(self):
+        s_should_send = Switch(seed_ipp=faripp)
+        s_should_send.send = Mock()
+        s_should_send.startProtocol()
+        assert s_should_send.send.called
+        s_should_not_send = Switch()
+        s_should_not_send.ipp = selfipp
+        s_should_not_send.send = Mock()
+        s_should_not_send.startProtocol()
+        assert not s_should_not_send.send.called
+
+
 class TestTelex(TestCase):
 
     def test_telex_acts_like_a_dictionary(self):

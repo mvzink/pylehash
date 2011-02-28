@@ -15,12 +15,11 @@ class Switch(DatagramProtocol):
         self.ipp = None
         self.buckets = []
         self.handlers = {}
+        self.seed_ipp = seed_ipp
 
-        if seed_ipp:
-            self.seed_ipp = seed_ipp
-            self.add_handler(handlers.BootstrapHandler(seed_ipp))
+        if self.seed_ipp:
+            self.add_handler(handlers.BootstrapHandler(self.seed_ipp))
         else:
-            self.seed_ipp = False
             for handler in handlers.default_handlers():
                 self.add_handler(handler)
 
@@ -33,7 +32,7 @@ class Switch(DatagramProtocol):
         learning our IPP. Only does so if we don't have an IPP but do have a
         seed to contact.
         '''
-        if self.ipp == None and self.seed_ipp != False:
+        if self.ipp == None and self.seed_ipp != None:
             t = Telex(other_dict={'+end':hash.hexhash('bootstrap')})
             self.send(t, self.seed_ipp)
 
