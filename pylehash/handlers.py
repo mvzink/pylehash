@@ -5,7 +5,6 @@ Created on Feb 15, 2011
 '''
 
 from .telex import Telex
-from .end import End
 from .util import ippstr, ipptup
 
 def default_handlers():
