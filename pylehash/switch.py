@@ -53,8 +53,9 @@ class Switch(DatagramProtocol):
         Runs the given telex and sender by all our current handlers.
         '''
         print "Received ", telex, "from", ipp[0], ":", ipp[1]
+        end = self.find_end(ipp)
         for handler in self.handlers.values():
-            handler(telex, End(ipp), self)
+            handler(telex, end, self)
 
     def send(self, telex=None, to=None):
         '''
@@ -68,17 +69,40 @@ class Switch(DatagramProtocol):
             self.transport.write(telex.dumps(), to.ipp)
 
     def bucket_for(self, end):
+        '''
+        Returns the bucket associating ends the same distance from us as the
+        given end (End or ippstr)
+        '''
         d = self.distance(end)
         return self.buckets[d]
 
     def distance(self, end):
+        '''
+        Finds the distance between the given end (End or ippstr) and ourselves.
+        '''
         if isinstance(end, End):
             return hash.distance(self.ipp, end.ipp)
         elif isinstance(end, str):
             return hash.distance(hash.hexhash(self.ipp), end)
 
     def add_end(self, end):
-        self.bucket_for(end)[hash.hexhash(end)] = end
+        '''
+        Adds the given end to our buckets iff an end isn't already there.
+        '''
+        if not hash.hexhash(end) in self.bucket_for(end):
+            self.bucket_for(end)[hash.hexhash(end)] = end
+
+    def find_end(self, ipp):
+        '''
+        Tries to find the end for the given ipptup in our beckets. If it isn't
+        there, it adds a new one.
+        '''
+        e = End(ipp)
+        if hash.hexhash(e) in self.bucket_for(e):
+            return self.bucket_for(e)[hash.hexhash(e)]
+        else:
+            self.add_end(e)
+            return e
 
     def add_handler(self, handler):
         self.handlers[id(handler)] = handler
