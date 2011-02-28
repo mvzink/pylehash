@@ -53,13 +53,15 @@ class TestHash(TestCase):
     def test_distance_is_an_int(self):
         assert isinstance(hash.distance(selfipp, closeipp), int)
 
-    def test_distance_supports_hash_or_ipptuple(self):
+    def test_distance_supports_hash_ipptuple_or_end(self):
         a = hash.distance(selfipp, faripp)
         b = hash.distance(hash.hexhash(selfipp), hash.hexhash(faripp))
         c = hash.distance(hash.hexhash(selfipp), faripp)
         d = hash.distance(selfipp, hash.hexhash(faripp))
-        assert a == b == c == d
-
+        e = hash.distance(selfipp, End(faripp))
+        f = hash.distance(End(selfipp), faripp)
+        g = hash.distance(End(selfipp), End(faripp))
+        assert a == b == c == d == e == f == g
 
 class TestSwitch(TestCase):
 

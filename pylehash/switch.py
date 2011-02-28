@@ -46,14 +46,15 @@ class Switch(DatagramProtocol):
         Turns the datagram into a Telex and calles switch.handle on it with the
         address of the sender.
         '''
-        self.handle(Telex(data=datagram), addr)
+        self.handle(Telex(data=datagram), addr, len(datagram))
 
-    def handle(self, telex, ipp):
+    def handle(self, telex, ipp, bytes):
         '''
         Runs the given telex and sender by all our current handlers.
         '''
-        print "Received ", telex, "from", ipp[0], ":", ipp[1]
+        print "<<", ippstr(ipp), ":", telex.dumps()
         end = self.find_end(ipp)
+        end.br += bytes
         for handler in self.handlers.values():
             handler(telex, end, self)
 
@@ -66,6 +67,8 @@ class Switch(DatagramProtocol):
         '''
         if telex and to:
             telex['_to'] = ippstr(to.ipp)
+            telex['_br'] = to.br
+            print ">>", ippstr(to.ipp), ":", telex.dumps()
             self.transport.write(telex.dumps(), to.ipp)
 
     def bucket_for(self, end):
@@ -80,10 +83,7 @@ class Switch(DatagramProtocol):
         '''
         Finds the distance between the given end (End or ippstr) and ourselves.
         '''
-        if isinstance(end, End):
-            return hash.distance(self.ipp, end.ipp)
-        elif isinstance(end, str):
-            return hash.distance(hash.hexhash(self.ipp), end)
+        return hash.distance(self.ipp, end)
 
     def add_end(self, end):
         '''
@@ -98,10 +98,13 @@ class Switch(DatagramProtocol):
         there, it adds a new one.
         '''
         e = End(ipp)
-        if hash.hexhash(e) in self.bucket_for(e):
-            return self.bucket_for(e)[hash.hexhash(e)]
+        if self.ipp:
+            if hash.hexhash(e) in self.bucket_for(e):
+                return self.bucket_for(e)[hash.hexhash(e)]
+            else:
+                self.add_end(e)
+                return e
         else:
-            self.add_end(e)
             return e
 
     def add_handler(self, handler):

@@ -24,13 +24,17 @@ def binhash(end):
     return hexbin(hexhash(end))
     
 def distance(hash1, hash2):
-    if isinstance(hash1, tuple) or isinstance(hash1, End):
+    if isinstance(hash1, tuple):
         a = binhash(hash1)
+    elif isinstance(hash1, End):
+        a = binhash(hash1.ipp)
     else:
         a = hexbin(hash1)
 
-    if isinstance(hash2, tuple) or isinstance(hash2, End):
+    if isinstance(hash2, tuple):
         b = binhash(hash2)
+    elif isinstance(hash2, End):
+        b = binhash(hash2.ipp)
     else:
         b = hexbin(hash2)
 
