@@ -7,7 +7,7 @@ Created on Feb 3, 2011
 from twisted.internet.protocol import DatagramProtocol
 import hash, handlers
 from .telex import Telex
-from .end import End
+from .end import End, EndManager
 from .util import ippstr
 
 class Switch(DatagramProtocol):
@@ -16,18 +16,15 @@ class Switch(DatagramProtocol):
     '''
     def __init__(self, ipp=False, seed_ipp=False):
         self.ipp = ipp
-        self.buckets = []
-        self.handlers = {}
         self.seed_ipp = seed_ipp
+        self.ends = EndManager(self)
+        self.handlers = {}
 
         if self.ipp:
             for handler in handlers.default_handlers():
                 self.add_handler(handler)
         elif self.seed_ipp:
             self.add_handler(handlers.BootstrapHandler(self.seed_ipp))
-
-        for _ in range(0,161):
-            self.buckets.append({})
 
     def startProtocol(self):
         '''
@@ -53,7 +50,7 @@ class Switch(DatagramProtocol):
         Runs the given telex and sender by all our current handlers.
         '''
         print "<<", ippstr(ipp), ":", telex.dumps()
-        end = self.find_end(ipp)
+        end = self.ends.find(ipp)
         end.br += bytes
         for handler in self.handlers.values():
             handler(telex, end, self)
@@ -70,42 +67,6 @@ class Switch(DatagramProtocol):
             telex['_br'] = to.br
             print ">>", ippstr(to.ipp), ":", telex.dumps()
             self.transport.write(telex.dumps(), to.ipp)
-
-    def bucket_for(self, end):
-        '''
-        Returns the bucket associating ends the same distance from us as the
-        given end (End or ippstr)
-        '''
-        d = self.distance(end)
-        return self.buckets[d]
-
-    def distance(self, end):
-        '''
-        Finds the distance between the given end (End or ippstr) and ourselves.
-        '''
-        return hash.distance(self.ipp, end)
-
-    def add_end(self, end):
-        '''
-        Adds the given end to our buckets iff an end isn't already there.
-        '''
-        if not hash.hexhash(end) in self.bucket_for(end):
-            self.bucket_for(end)[hash.hexhash(end)] = end
-
-    def find_end(self, ipp):
-        '''
-        Tries to find the end for the given ipptup in our beckets. If it isn't
-        there, it adds a new one.
-        '''
-        e = End(ipp)
-        if self.ipp:
-            if hash.hexhash(e) in self.bucket_for(e):
-                return self.bucket_for(e)[hash.hexhash(e)]
-            else:
-                self.add_end(e)
-                return e
-        else:
-            return e
 
     def add_handler(self, handler):
         self.handlers[id(handler)] = handler

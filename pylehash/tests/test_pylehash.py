@@ -9,7 +9,7 @@ TODO: Rename class fixture vars to be more informative
 from mock import Mock
 
 from test_stuff import TestCase, selfipp, closeipp, closeipp2, closeipp3, mediumipp, faripp
-from pylehash import hash, Telex, Switch, End, handlers, ippstr
+from pylehash import hash, Telex, Switch, End, handlers, ippstr, EndManager
 
 class TestHash(TestCase):
     
@@ -71,18 +71,6 @@ class TestSwitch(TestCase):
 
     def test_switch_complete_bootstrap(self):
         assert self.s.ipp == selfipp
-        
-    def test_switch_add_end_adds_end(self):
-        self.s.add_end(End(closeipp))
-        assert self.s.bucket_for(End(closeipp))[hash.hexhash(closeipp)]
-
-    def test_switch_bucket_for_gives_correct_bucket(self):
-        self.s.add_end(End(closeipp))
-        o = self.s.bucket_for(End(closeipp))
-        assert self.s.buckets.index(o) == hash.distance(selfipp, closeipp)
-        self.s.add_end(End(faripp))
-        p = self.s.bucket_for(End(faripp))
-        assert self.s.buckets.index(p) == hash.distance(selfipp, faripp)
 
     def test_switch_send_writes_to_transport_iff_the_telex_is_not_empty(self):
         s = Switch()
@@ -251,7 +239,7 @@ class TestEndHandler(TestCase):
     def test_end_handler_sends_list_of_ends_to_original_sender(self):
         switch = Switch()
         switch.ipp = selfipp
-        switch.add_end(End(faripp))
+        switch.ends.add(End(faripp))
         switch.send = Mock()
         self.t(self.seeking_far, self.from_end, switch)
         assert switch.send.called
@@ -314,7 +302,7 @@ class TestSeeHandler(TestCase):
         self.h = handlers.SeeHandler()
         self.s = Switch()
         self.s.ipp = selfipp
-        self.s.add_end = Mock()
+        self.s.ends.add = Mock()
         self.t = Telex(other_dict={'.see': map(ippstr, [closeipp2, closeipp3, mediumipp])})
         self.no_match = Telex(other_dict={'+foo': 'bar'})
 
@@ -324,4 +312,29 @@ class TestSeeHandler(TestCase):
 
     def test_see_handler_tells_switch_to_add_ends(self):
         self.h(self.t, End(closeipp), self.s)
-        assert self.s.add_end.called
+        assert self.s.ends.add.called
+
+
+class TestEndManager(TestCase):
+
+    def setUp(self):
+        self.s = Switch(ipp=selfipp)
+        self.em = EndManager(self.s)
+        self.ce = End(closeipp)
+        self.ce2 = End(closeipp2)
+        self.ce3 = End(closeipp3)
+        self.me = End(mediumipp)
+        self.fe = End(faripp)
+
+    def test_end_manager_add_end_adds_end_at_correct_distance(self):
+        self.em.add(self.ce)
+        bucket = self.em._buckets[hash.distance(self.s.ipp, self.ce)]
+        assert bucket[hash.hexhash(self.ce)]
+
+    def test_bucket_for_gives_correct_bucket(self):
+        self.em.add(self.ce)
+        d1 = hash.distance(self.s.ipp, self.ce)
+        assert self.em._buckets[d1] is self.em.bucket_for(self.ce)
+        self.em.add(self.fe)
+        d2 = hash.distance(self.s.ipp, self.fe)
+        assert self.em._buckets[d2] == self.em.bucket_for(self.fe)

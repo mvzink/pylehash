@@ -31,8 +31,9 @@ class Handler(object):
         '''
         handler.matches(telex, from_end, switch) -> True|False
         
-        Returns True or 
+        Defaults to returning True if no matcher is specified by a subclass.
         '''
+        return True
 
 class TapHandler(Handler):
 
@@ -102,7 +103,7 @@ class EndHandler(TapHandler):
         super(EndHandler, self).__init__([{'has': ['+end']}])
     
     def handle(self, telex, from_end, switch):
-        sees = map(lambda e: ippstr(e.ipp), switch.bucket_for(telex['+end']).values()[:3])
+        sees = map(lambda e: ippstr(e.ipp), switch.ends.bucket_for(telex['+end']).values()[:3])
         sees = filter(lambda e: e != ippstr(from_end.ipp), sees)
         t = Telex(other_dict={'.see':sees})
         switch.send(telex=t, to=from_end)
@@ -120,7 +121,7 @@ class BootstrapHandler(Handler):
         self.seed_ipp = ipp
 
     def matches(self, telex, from_end, switch):
-        return switch.ipp == None and from_end.ipp == self.seed_ipp and '_to' in telex
+        return not switch.ipp and from_end.ipp == self.seed_ipp and '_to' in telex
 
     def handle(self, telex, from_end, switch):
         switch.ipp = ipptup(telex['_to'])
@@ -134,4 +135,4 @@ class SeeHandler(TapHandler):
         super(SeeHandler, self).__init__([{'has': ['.see']}])
 
     def handle(self, telex, from_end, switch):
-        switch.add_end(from_end)
+        switch.ends.add(from_end)
