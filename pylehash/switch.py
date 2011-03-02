@@ -14,17 +14,17 @@ class Switch(DatagramProtocol):
     '''
     TODO: Document the Switch class
     '''
-    def __init__(self, seed_ipp=None):
-        self.ipp = None
+    def __init__(self, ipp=None, seed_ipp=None):
+        self.ipp = ipp
         self.buckets = []
         self.handlers = {}
         self.seed_ipp = seed_ipp
 
-        if self.seed_ipp:
-            self.add_handler(handlers.BootstrapHandler(self.seed_ipp))
-        else:
+        if self.ipp:
             for handler in handlers.default_handlers():
                 self.add_handler(handler)
+        elif self.seed_ipp:
+            self.add_handler(handlers.BootstrapHandler(self.seed_ipp))
 
         for _ in range(0,161):
             self.buckets.append({})

@@ -10,8 +10,9 @@ Part of a class project viewable [here][class project].
 Stuff that doesn't exist yet
 ----------------------------
 
-Ordered roughly by priority to the end of having a working switch
+Ordered roughly by priority
 
+* An example app
 * `_ring`/`_line` mechanics
 * Correct k-bucket mechanics
 	* Not filling up, checking that they exist, etc.
