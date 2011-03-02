@@ -4,6 +4,7 @@ Created on Feb 27, 2011
 @author: Michael Victor Zink <zuwiki@zuwiki.net>
 '''
 
+import copy
 import hash
 
 class End(object):
@@ -17,15 +18,17 @@ class EndManager(object):
         self.switch = switch
         self._buckets = {}
 
+    def bucket(self, i):
+        if i not in self._buckets:
+            self._buckets[i] = {}
+        return self._buckets[i]
+
     def bucket_for(self, end):
         '''
         Returns the bucket associating ends the same distance from us as the
         given end (End or ippstr)
         '''
-        d = self.distance(end)
-        if d not in self._buckets:
-            self._buckets[d] = {}
-        return self._buckets[d]
+        return self.bucket(self.distance(end))
 
     def distance(self, end):
         '''
@@ -54,3 +57,14 @@ class EndManager(object):
                 return e
         else:
             return e
+
+    def near(self, end_ipp_or_hash):
+        b = self.bucket_for(end_ipp_or_hash).values()
+        if len(b) < 3:
+            d = self.distance(end_ipp_or_hash)
+            for i in reversed(range(1, d)):
+                b += self.bucket(i).values()
+                if len(b) >= 3:
+                    b = b[:3]
+                    break
+        return b

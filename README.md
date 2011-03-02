@@ -12,7 +12,6 @@ Stuff that doesn't exist yet
 
 Ordered roughly by priority
 
-* See handler should return nearby ends if there are none in the same bucket
 * An example app
 * `_ring`/`_line` mechanics
 * Correct k-bucket mechanics
