@@ -10,8 +10,7 @@ from twisted.internet import reactor
 
 def make_switch(no_seed=None, seed=None):
     if no_seed:
-        s = Switch()
-        s.ipp = (no_seed[0], int(no_seed[1]))
+        s = Switch(ipp = (no_seed[0], int(no_seed[1])))
     elif seed:
         s = Switch(seed_ipp=(seed[0], int(seed[1])))
     else:
@@ -30,9 +29,9 @@ if __name__ == '__main__':
     parser.add_argument('--seed', nargs=2, dest='seed', metavar=('HOST', 'PORT'), default=False,
         help='The port and host of a seed to contact. \
             (default: 208.68.163.247:42424 aka telehash.org:42424)')
-    parser.add_argument('--no-seed', nargs=2, dest='no_seed', metavar=('HOST', 'PORT'), default=False,
-        help='Don\'t contact a seed; usually means we will be a seed for a network. \
+    parser.add_argument('--no-seed', nargs=1, dest='no_seed', metavar='HOST', default=False,
+        help='Don\'t contact a seed; usually means we will be a seed for a network. Argument specifies our own IP address. \
             Overrides --seed (default: no)')
     args = parser.parse_args()
 
-    run(args.port, make_switch(seed=args.seed, no_seed=args.no_seed))
+    run(args.port, make_switch(seed=args.seed, no_seed=(args.no_seed, args.port)))
