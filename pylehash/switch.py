@@ -14,7 +14,7 @@ class Switch(DatagramProtocol):
     '''
     TODO: Document the Switch class
     '''
-    def __init__(self, ipp=None, seed_ipp=None):
+    def __init__(self, ipp=False, seed_ipp=False):
         self.ipp = ipp
         self.buckets = []
         self.handlers = {}
@@ -35,7 +35,7 @@ class Switch(DatagramProtocol):
         learning our IPP. Only does so if we don't have an IPP but do have a
         seed to contact.
         '''
-        if self.ipp == None and self.seed_ipp != None:
+        if self.seed_ipp and not self.ipp:
             t = Telex(other_dict={'+end':hash.hexhash('1.2.3.4:5555')})
             self.send(t, End(self.seed_ipp))
 

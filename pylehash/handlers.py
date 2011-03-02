@@ -104,9 +104,8 @@ class EndHandler(TapHandler):
     def handle(self, telex, from_end, switch):
         sees = map(lambda e: ippstr(e.ipp), switch.bucket_for(telex['+end']).values()[:3])
         sees = filter(lambda e: e != ippstr(from_end.ipp), sees)
-        if sees:
-            t = Telex(other_dict={'.see':sees})
-            switch.send(telex=t, to=from_end)
+        t = Telex(other_dict={'.see':sees})
+        switch.send(telex=t, to=from_end)
 
 class NewTapHandler(TapHandler):
     def __init__(self):

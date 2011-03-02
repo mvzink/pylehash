@@ -297,7 +297,7 @@ class TestBootstrapHandler(TestCase):
     def test_bootstrap_handler_sets_switch_ipp(self):
         s = Switch()
         s.remove_handler = Mock()
-        assert s.ipp == None
+        assert not s.ipp
         self.h(self.telex_with_to, End(faripp), s)
         assert s.ipp == ('127.0.0.1', 5555)
 
