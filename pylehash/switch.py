@@ -19,12 +19,14 @@ class Switch(DatagramProtocol):
         self.seed_ipp = seed_ipp
         self.ends = EndManager(self)
         self.handlers = {}
+        self.startup_callbacks = []
 
         if self.ipp:
             for handler in handlers.default_handlers():
                 self.add_handler(handler)
         elif self.seed_ipp:
             self.add_handler(handlers.BootstrapHandler(self.seed_ipp))
+            self.add_startup_callback(send_bootstrap_telex)
 
     def startProtocol(self):
         '''
@@ -32,9 +34,8 @@ class Switch(DatagramProtocol):
         learning our IPP. Only does so if we don't have an IPP but do have a
         seed to contact.
         '''
-        if self.seed_ipp and not self.ipp:
-            t = Telex(other_dict={'+end':hash.hexhash('1.2.3.4:5555')})
-            self.send(t, End(self.seed_ipp))
+        for callback in self.startup_callbacks:
+            callback(self)
 
     def datagramReceived(self, datagram, addr):
         '''
@@ -73,3 +74,13 @@ class Switch(DatagramProtocol):
 
     def remove_handler(self, handler):
         self.handlers.pop(id(handler))
+
+    def add_startup_callback(self, callback):
+        self.startup_callbacks.append(callback)
+
+def send_bootstrap_telex(switch):
+    '''
+    Sends an arbitrary bootstrap telex. Should be relocated, I believe.
+    '''
+    t = Telex(other_dict={'+end':hash.hexhash('1.2.3.4:5555')})
+    switch.send(t, switch.ends.find(switch.seed_ipp))

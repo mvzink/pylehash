@@ -91,6 +91,22 @@ class TestSwitch(TestCase):
         s_should_not_send.startProtocol()
         assert not s_should_not_send.send.called
 
+    def test_switch_add_start_callback_adds_start_callback(self):
+        cb = lambda s: True
+        self.s.add_startup_callback(cb)
+        assert cb in self.s.startup_callbacks
+
+    def test_switch_start_protocol_calls_start_up_callbacks(self):
+        def mk_callback(i):
+            f = lambda s: s.send(telex=Telex(other_dict={'+foo':i}), to=faripp)
+            return f
+        self.s.send = Mock()
+        self.s.startup_callbacks = [mk_callback(i) for i in range(1,5)]
+        self.s.startProtocol()
+        assert self.s.send.call_count == 4
+        has_telex_and_to = lambda arg: 'telex' in arg[1] and 'to' in arg[1]
+        assert all(map(has_telex_and_to, self.s.send.call_args_list))
+
 
 class TestEnd(TestCase):
 
