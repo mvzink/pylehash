@@ -66,11 +66,7 @@ class TestHash(TestCase):
 class TestSwitch(TestCase):
 
     def setUp(self):
-        self.s = Switch()
-        self.s.ipp = selfipp
-
-    def test_switch_complete_bootstrap(self):
-        assert self.s.ipp == selfipp
+        self.s = Switch(ipp=selfipp)
 
     def test_switch_send_writes_to_transport_iff_the_telex_is_not_empty(self):
         s = Switch()
