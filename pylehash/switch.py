@@ -20,6 +20,7 @@ class Switch(DatagramProtocol):
         self.ends = EndManager(self)
         self.handlers = {}
         self.startup_callbacks = []
+        self.bootstrap_completed_callbacks = []
 
         if self.ipp:
             for handler in handlers.default_handlers():
@@ -35,6 +36,11 @@ class Switch(DatagramProtocol):
         seed to contact.
         '''
         for callback in self.startup_callbacks:
+            callback(self)
+
+    def complete_bootstrap(self, ipp):
+        self.ipp = ipp
+        for callback in self.bootstrap_completed_callbacks:
             callback(self)
 
     def datagramReceived(self, datagram, addr):
@@ -75,8 +81,14 @@ class Switch(DatagramProtocol):
     def remove_handler(self, handler):
         self.handlers.pop(id(handler))
 
+    '''
+    TODO: (Possibly) handle callbacks in the same way as handlers (with ids)
+    '''
     def add_startup_callback(self, callback):
         self.startup_callbacks.append(callback)
+
+    def add_bootstrap_completed_callback(self, callback):
+        self.bootstrap_completed_callbacks.append(callback)
 
 def send_bootstrap_telex(switch):
     '''
