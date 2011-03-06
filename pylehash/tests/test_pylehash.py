@@ -9,7 +9,7 @@ TODO: Rename class fixture vars to be more informative
 from mock import Mock
 
 from test_stuff import TestCase, selfipp, closeipp, closeipp2, closeipp3, mediumipp, faripp
-from pylehash import hash, Telex, Switch, End, handlers, ippstr, EndManager
+from pylehash import hash, Telex, Switch, End, handlers, ippstr, EndManager, switch
 
 class TestHash(TestCase):
     
@@ -106,6 +106,12 @@ class TestSwitch(TestCase):
         assert self.s.send.call_count == 4
         has_telex_and_to = lambda arg: 'telex' in arg[1] and 'to' in arg[1]
         assert all(map(has_telex_and_to, self.s.send.call_args_list))
+
+    def test_switch_bootstrap_telex_added_if_seed_and_no_ipp(self):
+        s_has_ipp = Switch(ipp=selfipp)
+        assert switch.send_bootstrap_telex not in s_has_ipp.startup_callbacks
+        s_has_seed_and_no_ipp = Switch(seed_ipp=faripp)
+        assert switch.send_bootstrap_telex in s_has_seed_and_no_ipp.startup_callbacks
 
 
 class TestEnd(TestCase):
