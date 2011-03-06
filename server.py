@@ -5,8 +5,7 @@ Created on Feb 3, 2011
 @author: Michael Victor Zink <zuwiki@zuwiki.net>
 '''
 
-from pylehash import Switch
-from twisted.internet import reactor
+from pylehash import Switch, reactor
 
 def make_switch(port, ip=None, seed=None):
     if ip:
