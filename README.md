@@ -19,6 +19,13 @@ Ordered roughly by priority
 * Correct external tap management (depends on `_ring`/`_line`)
 * An *easy* way to build a test network
 
+Stuff that is definitely broken
+-------------------------------
+
+* When an End sends a `+end` for itself, we don't `.see` it back
+* Telexes with perfectly useful `.see`s are unused
+	* This actually reflects a more general brokenness in the handler system
+
 In general terms, how it works
 ------------------------------
 
