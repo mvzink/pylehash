@@ -24,4 +24,4 @@ class Telex(dict):
             self['_to'] = to
     
     def dumps(self):
-        return json.dumps(self)
+        return json.dumps(self, separators=(',',':'))
