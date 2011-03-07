@@ -58,7 +58,7 @@ class Switch(DatagramProtocol):
         '''
         print "<<", ippstr(ipp), ":", telex.dumps()
         end = self.ends.find(ipp)
-        end.br += bytes
+        end.bytes_received += bytes
         for handler in self.handlers.values():
             handler(telex, end, self)
 
@@ -71,7 +71,7 @@ class Switch(DatagramProtocol):
         '''
         if telex and to:
             telex['_to'] = ippstr(to.ipp)
-            telex['_br'] = to.br
+            telex['_br'] = to.bytes_received
             print ">>", ippstr(to.ipp), ":", telex.dumps()
             self.transport.write(telex.dumps(), to.ipp)
 

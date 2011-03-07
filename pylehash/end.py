@@ -10,7 +10,7 @@ import hash
 class End(object):
     def __init__(self, ipp):
         self.ipp = ipp
-        self.br = 0
+        self.bytes_received = 0
 
 class EndManager(object):
 
