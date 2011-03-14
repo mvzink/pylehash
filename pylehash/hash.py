@@ -28,14 +28,14 @@ def distance(hash1, hash2):
         a = binhash(hash1)
     elif isinstance(hash1, End):
         a = binhash(hash1.ipp)
-    else:
+    else: # is hash
         a = hexbin(hash1)
 
     if isinstance(hash2, tuple):
         b = binhash(hash2)
     elif isinstance(hash2, End):
         b = binhash(hash2.ipp)
-    else:
+    else: # is hash
         b = hexbin(hash2)
 
     diff = a ^ b
