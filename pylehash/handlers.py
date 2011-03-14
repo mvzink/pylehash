@@ -124,11 +124,12 @@ class BootstrapHandler(Handler):
         return not switch.ipp and from_end.ipp == self.seed_ipp and '_to' in telex
 
     def handle(self, telex, from_end, switch):
-        switch.complete_bootstrap(ipptup(telex['_to']))
+        switch.ipp = ipptup(telex['_to'])
         for handler in default_handlers():
             switch.add_handler(handler)
             handler(telex, from_end, switch)
         switch.remove_handler(self)
+        switch.complete_bootstrap()
 
 class SeeHandler(TapHandler):
 

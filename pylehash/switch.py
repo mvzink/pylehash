@@ -38,8 +38,10 @@ class Switch(DatagramProtocol):
         for callback in self.startup_callbacks:
             callback(self)
 
-    def complete_bootstrap(self, ipp):
-        self.ipp = ipp
+    def complete_bootstrap(self):
+        '''
+        Calls all the bootstrap callbacks that have been added
+        '''
         for callback in self.bootstrap_completed_callbacks:
             callback(self)
 
