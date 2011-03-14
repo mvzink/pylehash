@@ -26,8 +26,8 @@ class InteractWithSwitch(basic.LineReceiver):
         try:
             src = compile(line, '<input %d>' % self.lines, 'single')
             eval(src, self.state)
-        except:
-            pass
+        except Exception as e:
+            print e
         self.transport.write('>>> ')
 
 def main():

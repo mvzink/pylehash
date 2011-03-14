@@ -143,9 +143,9 @@ class TestEnd(TestCase):
 
     def test_end_tracks_bytes_received(self):
         e = End(closeipp)
-        assert e.br == 0
-        e.br += 52
-        assert e.br == 52
+        assert e.bytes_received == 0
+        e.bytes_received += 52
+        assert e.bytes_received == 52
 
 
 class TestTelex(TestCase):
@@ -166,7 +166,7 @@ class TestTelex(TestCase):
     def test_telex_dumps_to_json(self):
         t = Telex()
         t['+test'] = 'testing'
-        assert t.dumps() == '{"+test": "testing"}'
+        assert t.dumps() == '{"+test":"testing"}'
 
 
 class TestHandler(TestCase):
