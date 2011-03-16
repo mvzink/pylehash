@@ -6,6 +6,7 @@ Created on Feb 15, 2011
 
 from .telex import Telex
 from .util import ippstr, ipptup
+from .end import End
 
 def default_handlers():
     return [NewTapHandler(), EndHandler(), SeeHandler()]
@@ -138,4 +139,4 @@ class SeeHandler(TapHandler):
 
     def handle(self, telex, from_end, switch):
         for end in telex['.see']:
-            switch.ends.add(ipptup(end))
+            switch.ends.add(End(ipptup(end)))

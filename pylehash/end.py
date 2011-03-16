@@ -36,27 +36,29 @@ class EndManager(object):
         '''
         return hash.distance(self.switch.ipp, end)        
 
-    def add(self, end):
+    def add(self, e):
         '''
         Adds the given end to our buckets iff an end isn't already there.
         '''
-        if not hash.hexhash(end) in self.bucket_for(end):
-            self.bucket_for(end)[hash.hexhash(end)] = end
+        if not hash.hexhash(e.ipp) in self.bucket_for(e.ipp):
+            self.bucket_for(e.ipp)[hash.hexhash(e.ipp)] = e
 
     def find(self, ipp):
         '''
         Tries to find the end for the given ipptup in our beckets. If it isn't
         there, it adds a new one.
         '''
-        e = End(ipp)
         if self.switch.ipp:
-            if hash.hexhash(e) in self.bucket_for(e):
-                return self.bucket_for(e)[hash.hexhash(e)]
+            h = hash.hexhash(ipp)
+            b = self.bucket_for(ipp)
+            if h in b:
+                e = b[h]
             else:
+                e = End(ipp)
                 self.add(e)
-                return e
         else:
-            return e
+            e = End(ipp)
+        return e
 
     def near(self, end_ipp_or_hash):
         b = self.bucket_for(end_ipp_or_hash).values()
