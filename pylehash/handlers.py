@@ -63,7 +63,7 @@ class TapHandler(Handler):
                         test_matches = test_matches and key in telex
                 elif clause == 'is':
                     for key in test[clause]:
-                        test_matches = test_matches and telex[key] == test[clause][key]
+                        test_matches = test_matches and key in telex and telex[key] == test[clause][key]
                 # We need all the clauses to match, so break if this one doesn't
                 if (test_matches == False):
                     break
