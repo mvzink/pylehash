@@ -40,7 +40,7 @@ class EndManager(object):
         '''
         Adds the given end to our buckets iff an end isn't already there.
         '''
-        if not hash.hexhash(e.ipp) in self.bucket_for(e.ipp):
+        if e.ipp != self.switch.ipp and not hash.hexhash(e.ipp) in self.bucket_for(e.ipp):
             self.bucket_for(e.ipp)[hash.hexhash(e.ipp)] = e
 
     def find(self, ipp):

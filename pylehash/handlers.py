@@ -105,7 +105,6 @@ class EndHandler(TapHandler):
     
     def handle(self, telex, from_end, switch):
         sees = map(lambda e: ippstr(e.ipp), switch.ends.near(telex['+end']))
-        sees = filter(lambda e: e != ippstr(from_end.ipp), sees)
         t = Telex(other_dict={'.see':sees})
         switch.send(telex=t, to=from_end)
 

@@ -19,11 +19,6 @@ Ordered roughly by priority
 * Correct external tap management (depends on `_ring`/`_line`)
 * An *easy* way to build a test network
 
-Stuff that is definitely broken
--------------------------------
-
-* When an End sends a `+end` for itself, we don't `.see` it back
-
 In general terms, how it works
 ------------------------------
 
