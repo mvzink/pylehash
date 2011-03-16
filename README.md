@@ -12,12 +12,12 @@ Stuff that doesn't exist yet
 
 Ordered roughly by priority
 
-* An example app
 * `_ring`/`_line` mechanics
 * Correct k-bucket mechanics
 	* Not filling up, checking that they exist, etc.
 * Correct external tap management (depends on `_ring`/`_line`)
 * An *easy* way to build a test network
+* A better example app
 
 In general terms, how it works
 ------------------------------
